@@ -16,9 +16,17 @@ interface CategoryPageProps {
 
 export default function CategoryPage({ params }: CategoryPageProps) {
   const [category, setCategory] = useState<Category | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Filter states
+  const [priceFilters, setPriceFilters] = useState<string[]>([]);
+  const [sizeFilters, setSizeFilters] = useState<string[]>([]);
+  const [conditionFilters, setConditionFilters] = useState<string[]>([]);
+  const [colorFilters, setColorFilters] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState('featured');
 
   useEffect(() => {
     const loadData = async () => {
@@ -32,7 +40,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         }
 
         setCategory(categoryData);
-        setProducts(productsData);
+        setAllProducts(productsData);
+        setFilteredProducts(productsData);
       } catch (error) {
         console.error('Error loading category data:', error);
       } finally {
@@ -42,6 +51,68 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
     loadData();
   }, [params]);
+
+  // Filter and sort products
+  useEffect(() => {
+    let filtered = [...allProducts];
+
+    // Apply price filters
+    if (priceFilters.length > 0) {
+      filtered = filtered.filter(product => {
+        return priceFilters.some(filter => {
+          switch (filter) {
+            case 'Under ₹1,000':
+              return product.price < 1000;
+            case '₹1,000 - ₹2,000':
+              return product.price >= 1000 && product.price <= 2000;
+            case '₹2,000 - ₹3,000':
+              return product.price > 2000 && product.price <= 3000;
+            case 'Above ₹3,000':
+              return product.price > 3000;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    // Apply size filters
+    if (sizeFilters.length > 0) {
+      filtered = filtered.filter(product => sizeFilters.includes(product.size));
+    }
+
+    // Apply condition filters
+    if (conditionFilters.length > 0) {
+      filtered = filtered.filter(product => conditionFilters.includes(product.condition));
+    }
+
+    // Apply color filters
+    if (colorFilters.length > 0) {
+      filtered = filtered.filter(product => colorFilters.includes(product.color));
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        // Sort by ID for now since createdAt doesn't exist
+        filtered.sort((a, b) => b.id.localeCompare(a.id));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => b.owner.rating - a.owner.rating);
+        break;
+      default:
+        // Keep original order for featured
+        break;
+    }
+
+    setFilteredProducts(filtered);
+  }, [allProducts, priceFilters, sizeFilters, conditionFilters, colorFilters, sortBy]);
 
   if (loading) {
     return (
@@ -73,7 +144,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
               <p className="text-gray-600 mt-1">
-                {category.description} • {products.length} items available
+                {category.description} • {filteredProducts.length} items available
               </p>
             </div>
           </div>
@@ -121,13 +192,24 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
                 <div className="space-y-2">
                   {[
-                    { label: 'Under ₹1,000', count: products.filter(p => p.price < 1000).length },
-                    { label: '₹1,000 - ₹2,000', count: products.filter(p => p.price >= 1000 && p.price <= 2000).length },
-                    { label: '₹2,000 - ₹3,000', count: products.filter(p => p.price > 2000 && p.price <= 3000).length },
-                    { label: 'Above ₹3,000', count: products.filter(p => p.price > 3000).length },
+                    { label: 'Under ₹1,000', count: allProducts.filter((p: Product) => p.price < 1000).length },
+                    { label: '₹1,000 - ₹2,000', count: allProducts.filter((p: Product) => p.price >= 1000 && p.price <= 2000).length },
+                    { label: '₹2,000 - ₹3,000', count: allProducts.filter((p: Product) => p.price > 2000 && p.price <= 3000).length },
+                    { label: 'Above ₹3,000', count: allProducts.filter((p: Product) => p.price > 3000).length },
                   ].map((range) => (
                     <label key={range.label} className="flex items-center space-x-2 cursor-pointer">
-                      <input type="checkbox" className="rounded text-pink-500 focus:ring-pink-500" />
+                      <input 
+                        type="checkbox" 
+                        className="rounded text-pink-500 focus:ring-pink-500"
+                        checked={priceFilters.includes(range.label)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPriceFilters([...priceFilters, range.label]);
+                          } else {
+                            setPriceFilters(priceFilters.filter(f => f !== range.label));
+                          }
+                        }}
+                      />
                       <span className="text-sm text-gray-700">{range.label}</span>
                       <span className="text-xs text-gray-500">({range.count})</span>
                     </label>
@@ -141,7 +223,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <div className="grid grid-cols-2 gap-2">
                   {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
                     <label key={size} className="flex items-center space-x-2 cursor-pointer">
-                      <input type="checkbox" className="rounded text-pink-500 focus:ring-pink-500" />
+                      <input 
+                        type="checkbox" 
+                        className="rounded text-pink-500 focus:ring-pink-500"
+                        checked={sizeFilters.includes(size)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSizeFilters([...sizeFilters, size]);
+                          } else {
+                            setSizeFilters(sizeFilters.filter(s => s !== size));
+                          }
+                        }}
+                      />
                       <span className="text-sm text-gray-700">{size}</span>
                     </label>
                   ))}
@@ -154,7 +247,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <div className="space-y-2">
                   {['Excellent', 'Good', 'Fair'].map((condition) => (
                     <label key={condition} className="flex items-center space-x-2 cursor-pointer">
-                      <input type="checkbox" className="rounded text-pink-500 focus:ring-pink-500" />
+                      <input 
+                        type="checkbox" 
+                        className="rounded text-pink-500 focus:ring-pink-500"
+                        checked={conditionFilters.includes(condition)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setConditionFilters([...conditionFilters, condition]);
+                          } else {
+                            setConditionFilters(conditionFilters.filter(c => c !== condition));
+                          }
+                        }}
+                      />
                       <span className="text-sm text-gray-700">{condition}</span>
                     </label>
                   ))}
@@ -167,7 +271,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <div className="grid grid-cols-2 gap-2">
                   {['Red', 'Black', 'Green', 'Pink', 'Gold', 'Blue'].map((color) => (
                     <label key={color} className="flex items-center space-x-2 cursor-pointer">
-                      <input type="checkbox" className="rounded text-pink-500 focus:ring-pink-500" />
+                      <input 
+                        type="checkbox" 
+                        className="rounded text-pink-500 focus:ring-pink-500"
+                        checked={colorFilters.includes(color)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setColorFilters([...colorFilters, color]);
+                          } else {
+                            setColorFilters(colorFilters.filter(c => c !== color));
+                          }
+                        }}
+                      />
                       <span className="text-sm text-gray-700">{color}</span>
                     </label>
                   ))}
@@ -175,7 +290,16 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               </div>
 
               {/* Clear Filters */}
-              <button className="w-full text-sm text-pink-600 hover:text-pink-700 font-medium">
+              <button 
+                onClick={() => {
+                  setPriceFilters([]);
+                  setSizeFilters([]);
+                  setConditionFilters([]);
+                  setColorFilters([]);
+                  setSortBy('featured');
+                }}
+                className="w-full text-sm text-pink-600 hover:text-pink-700 font-medium"
+              >
                 Clear All Filters
               </button>
             </div>
@@ -185,19 +309,23 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           <div className="flex-1">
             {/* Sort and View Options */}
             <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">
-                    {products.length} items found
-                  </span>
-                  <select className="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                    <option>Sort by: Featured</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Newest First</option>
-                    <option>Rating</option>
-                  </select>
-                </div>
+                              <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">
+                      {filteredProducts.length} items found
+                    </span>
+                    <select 
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    >
+                      <option value="featured">Sort by: Featured</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="newest">Newest First</option>
+                      <option value="rating">Rating</option>
+                    </select>
+                  </div>
                 <div className="flex items-center space-x-2">
                   <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
                     <Grid className="w-4 h-4" />
@@ -210,9 +338,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </div>
 
             {/* Products */}
-            {products.length > 0 ? (
+            {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-                {products.map((product) => (
+                {filteredProducts.map((product: Product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -227,7 +355,16 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <p className="text-gray-600 mb-4">
                   Try adjusting your filters or check back later for new items.
                 </p>
-                <button className="text-pink-600 hover:text-pink-700 font-medium">
+                <button 
+                  onClick={() => {
+                    setPriceFilters([]);
+                    setSizeFilters([]);
+                    setConditionFilters([]);
+                    setColorFilters([]);
+                    setSortBy('featured');
+                  }}
+                  className="text-pink-600 hover:text-pink-700 font-medium"
+                >
                   Clear Filters
                 </button>
               </div>

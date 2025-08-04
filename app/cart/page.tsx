@@ -82,100 +82,109 @@ export default function CartPage() {
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item.product.id} className="flex gap-4 p-4 border border-gray-200 rounded-lg">
-                    {/* Product Image */}
-                    <div className="relative w-24 h-32 flex-shrink-0">
-                      {isValidImageUrl(item.product.images[0]) ? (
-                        <Image
-                          src={item.product.images[0]}
-                          alt={item.product.name}
-                          fill
-                          className="object-cover rounded-lg"
-                          onError={(e) => handleImageError(e)}
-                          unoptimized={isExternalImage(item.product.images[0])}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
-                          <span className="text-gray-500 text-xs">Image</span>
-                        </div>
-                      )}
-                    </div>
+                  <div key={item.product.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Mobile Layout */}
+                    <div className="flex flex-col sm:flex-row">
+                      {/* Product Image */}
+                      <div className="relative w-full h-48 sm:w-24 sm:h-32 flex-shrink-0">
+                        {isValidImageUrl(item.product.images[0]) ? (
+                          <Image
+                            src={item.product.images[0]}
+                            alt={item.product.name}
+                            fill
+                            className="object-cover"
+                            onError={(e) => handleImageError(e)}
+                            unoptimized={isExternalImage(item.product.images[0])}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">Image</span>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">
-                            {item.product.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Size: {item.product.size} • Condition: {item.product.condition}
-                          </p>
-                          
-                          {/* Owner Info */}
-                          <div className="flex items-center space-x-2 mb-3">
-                            <div className="flex items-center space-x-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-sm text-gray-600">
-                                {item.product.owner.rating}
+                      {/* Product Details */}
+                      <div className="flex-1 p-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+                              {item.product.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3">
+                              Size: {item.product.size} • Condition: {item.product.condition}
+                            </p>
+                            
+                            {/* Owner Info - Mobile Optimized */}
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3">
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1">
+                                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                  <span className="text-sm text-gray-600">
+                                    {item.product.owner.rating}
+                                  </span>
+                                </div>
+                                <span className="text-gray-400 hidden sm:inline">•</span>
+                                <div className="flex items-center space-x-1">
+                                  <MapPin className="w-4 h-4 text-gray-400" />
+                                  <span className="text-sm text-gray-600 truncate">
+                                    {item.product.owner.location}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Rental Dates */}
+                            <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                              <Calendar className="w-4 h-4" />
+                              <span className="truncate">
+                                {item.rentalDates.startDate} - {item.rentalDates.endDate}
                               </span>
                             </div>
-                            <span className="text-gray-400">•</span>
-                            <div className="flex items-center space-x-1">
-                              <MapPin className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">
-                                {item.product.owner.location}
+
+                            {/* Price */}
+                            <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+                              <span className="text-lg font-semibold text-gray-900">
+                                {formatPrice(item.product.price)}
                               </span>
+                              {item.product.originalPrice > item.product.price && (
+                                <span className="text-sm text-gray-500 line-through">
+                                  {formatPrice(item.product.originalPrice)}
+                                </span>
+                              )}
+                              <span className="text-sm text-gray-600">per day</span>
                             </div>
                           </div>
 
-                          {/* Rental Dates */}
-                          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-3">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              {item.rentalDates.startDate} - {item.rentalDates.endDate}
-                            </span>
-                          </div>
-
-                          {/* Price */}
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg font-semibold text-gray-900">
-                              {formatPrice(item.product.price)}
-                            </span>
-                            {item.product.originalPrice > item.product.price && (
-                              <span className="text-sm text-gray-500 line-through">
-                                {formatPrice(item.product.originalPrice)}
-                              </span>
-                            )}
-                            <span className="text-sm text-gray-600">per day</span>
-                          </div>
-                        </div>
-
-                        {/* Quantity and Remove */}
-                        <div className="flex flex-col items-end space-y-2">
-                          <div className="flex items-center space-x-2">
+                          {/* Quantity and Remove - Mobile Optimized */}
+                          <div className="flex flex-col sm:flex-col items-start sm:items-end space-y-3">
+                            <div className="flex items-center space-x-3">
+                              <span className="text-sm font-medium text-gray-700">Quantity:</span>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => updateCartItemQuantity(item.product.id, item.quantity - 1)}
+                                  className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                  -
+                                </button>
+                                <span className="w-8 text-center font-medium">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateCartItemQuantity(item.product.id, item.quantity + 1)}
+                                  className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
                             <button
-                              onClick={() => updateCartItemQuantity(item.product.id, item.quantity - 1)}
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50"
+                              onClick={() => removeFromCart(item.product.id)}
+                              className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg"
                             >
-                              -
-                            </button>
-                            <span className="w-8 text-center">{item.quantity}</span>
-                            <button
-                              onClick={() => updateCartItemQuantity(item.product.id, item.quantity + 1)}
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50"
-                            >
-                              +
+                              <Trash2 className="w-4 h-4" />
+                              <span className="text-sm font-medium">Remove</span>
                             </button>
                           </div>
-                          <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-red-600 hover:text-red-700 p-1"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
                     </div>

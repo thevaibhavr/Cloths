@@ -216,8 +216,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           >
             View Details
           </Link>
-          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-pink-500 hover:text-pink-600 transition-colors">
-            Rent Now
+          <button
+            onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
+            className={`p-2 rounded-lg transition-all duration-200 ${
+              isInWishlist 
+                ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
           </button>
         </div>
       </div>
