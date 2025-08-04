@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getProductById, getCategoryById } from '../../data/products';
 import { formatPrice, formatDate, formatJoinDate, getConditionColor, getDiscountPercentage } from '../../utils';
-import { ArrowLeft, Star, MapPin, Calendar, Clock, Shield, Truck, Heart, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Calendar, Clock, Shield, Truck, Heart, Share2, MessageCircle, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import { useCart } from '../../context/CartContext';
+import { isExternalImage, isValidImageUrl, handleImageError } from '../../utils/imageUtils';
 
 interface ProductPageProps {
   params: Promise<{
@@ -18,24 +20,43 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState<any>(null);
   const [categoryData, setCategoryData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { addToCart, addToWishlist, removeFromWishlist, wishlistItems } = useCart();
 
   useEffect(() => {
     const loadProduct = async () => {
-      const { productId } = await params;
-      const productData = getProductById(productId);
-      const categoryData = productData ? getCategoryById(productData.category) : null;
-      setProduct(productData);
-      setCategoryData(categoryData);
+      try {
+        const { productId } = await params;
+        const productData = await getProductById(productId);
+        const categoryData = productData ? await getCategoryById(productData.category) : null;
+        setProduct(productData);
+        setCategoryData(categoryData);
+      } catch (error) {
+        console.error('Error loading product:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     loadProduct();
   }, [params]);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
   }
 
-  const category = getCategoryById(product.category);
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
+  const isInWishlist = wishlistItems.some(item => item.id === product.id);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -72,20 +93,35 @@ export default function ProductPage({ params }: ProductPageProps) {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-[3/4] bg-white rounded-xl overflow-hidden">
-              <Image
-                src={product.images[selectedImage]}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
+              {isValidImageUrl(product.images[selectedImage]) ? (
+                <Image
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  onError={(e) => handleImageError(e)}
+                  unoptimized={isExternalImage(product.images[selectedImage])}
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">Image not available</span>
+                </div>
+              )}
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
                   {discountPercentage}% OFF
                 </div>
               )}
               <div className="absolute top-4 right-4 flex space-x-2">
-                <button className="p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
-                  <Heart className="w-4 h-4 text-gray-600" />
+                <button 
+                  onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
+                  className={`p-2 rounded-full transition-colors ${
+                    isInWishlist 
+                      ? 'bg-pink-500 text-white' 
+                      : 'bg-white/80 backdrop-blur-sm hover:bg-white text-gray-600'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
                 </button>
                 <button className="p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
                   <Share2 className="w-4 h-4 text-gray-600" />
@@ -104,12 +140,20 @@ export default function ProductPage({ params }: ProductPageProps) {
                       selectedImage === index ? 'border-pink-500' : 'border-gray-200'
                     }`}
                   >
-                    <Image
-                      src={image}
-                      alt={`${product.name} - Image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+                    {isValidImageUrl(image) ? (
+                      <Image
+                        src={image}
+                        alt={`${product.name} - Image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        onError={(e) => handleImageError(e)}
+                        unoptimized={isExternalImage(image)}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500 text-xs">Image {index + 1}</span>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -233,11 +277,32 @@ export default function ProductPage({ params }: ProductPageProps) {
 
             {/* Action Buttons */}
             <div className="space-y-4">
-              <button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200">
-                Rent Now - {formatPrice(product.price)}
+              <button 
+                onClick={() => {
+                  const startDate = new Date();
+                  const endDate = new Date();
+                  endDate.setDate(endDate.getDate() + product.rentalDuration);
+                  
+                  addToCart(product, 1, {
+                    startDate: startDate.toISOString().split('T')[0],
+                    endDate: endDate.toISOString().split('T')[0]
+                  });
+                }}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <ShoppingBag className="w-5 h-5" />
+                <span>Rent Now - {formatPrice(product.price)}</span>
               </button>
-              <button className="w-full border-2 border-gray-300 text-gray-700 py-4 rounded-xl text-lg font-semibold hover:border-pink-500 hover:text-pink-600 transition-all duration-200">
-                Add to Wishlist
+              <button 
+                onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
+                className={`w-full py-4 rounded-xl text-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                  isInWishlist 
+                    ? 'bg-pink-100 text-pink-600 border-2 border-pink-200 hover:bg-pink-200' 
+                    : 'border-2 border-gray-300 text-gray-700 hover:border-pink-500 hover:text-pink-600'
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
+                <span>{isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
               </button>
             </div>
 

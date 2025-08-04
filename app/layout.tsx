@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { CartProvider } from "./context/CartContext";
 
 export const metadata: Metadata = {
   title: "RentElegance - Rent Designer Clothes for Every Occasion",
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
-        <Header />
-        <main>
-          {children}
-        </main>
-        <Footer />
+        <CartProvider>
+          <Header />
+          <main>
+            {children}
+          </main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

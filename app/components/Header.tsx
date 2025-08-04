@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingBag, User, Menu, X } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, Heart } from 'lucide-react';
 import { useState } from 'react';
+import { useCart } from '../context/CartContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { getCartItemCount, getWishlistCount } = useCart();
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
@@ -49,9 +51,22 @@ export default function Header() {
 
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
+            <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+              <Heart className="w-5 h-5" />
+              {getWishlistCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getWishlistCount()}
+                </span>
+              )}
+            </Link>
+            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
-            </button>
+              {getCartItemCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getCartItemCount()}
+                </span>
+              )}
+            </Link>
             <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <User className="w-5 h-5" />
             </button>
@@ -97,9 +112,22 @@ export default function Header() {
                 About
               </Link>
               <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
-                <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
+                <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+                  <Heart className="w-5 h-5" />
+                  {getWishlistCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {getWishlistCount()}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
                   <ShoppingBag className="w-5 h-5" />
-                </button>
+                  {getCartItemCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {getCartItemCount()}
+                    </span>
+                  )}
+                </Link>
                 <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
                   <User className="w-5 h-5" />
                 </button>

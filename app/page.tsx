@@ -1,11 +1,49 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import HeroSlider from './components/HeroSlider';
 import CategoryCard from './components/CategoryCard';
 import ProductCard from './components/ProductCard';
-import { categories, products } from './data/products';
+import { getCategories, getProducts } from './data/products';
 import { ArrowRight, Star, Users, Shield, Truck } from 'lucide-react';
 import Link from 'next/link';
+import { Category, Product } from './types';
 
 export default function Home() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [categoriesData, productsData] = await Promise.all([
+          getCategories(),
+          getProducts()
+        ]);
+        setCategories(categoriesData);
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const featuredProducts = products.slice(0, 6);
 
   return (

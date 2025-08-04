@@ -1,8 +1,12 @@
+'use client';
+
 import { notFound } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import ProductCard from '../../components/ProductCard';
 import { getCategoryById, getProductsByCategory } from '../../data/products';
-import { ArrowLeft, Filter, Grid, List } from 'lucide-react';
+import { ArrowLeft, Filter, Grid, List, X } from 'lucide-react';
 import Link from 'next/link';
+import { Category, Product } from '../../types';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -10,10 +14,45 @@ interface CategoryPageProps {
   }>;
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { categoryId } = await params;
-  const category = getCategoryById(categoryId);
-  const products = getProductsByCategory(categoryId);
+export default function CategoryPage({ params }: CategoryPageProps) {
+  const [category, setCategory] = useState<Category | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { categoryId } = await params;
+        const categoryData = await getCategoryById(categoryId);
+        const productsData = await getProductsByCategory(categoryId);
+
+        if (!categoryData) {
+          notFound();
+        }
+
+        setCategory(categoryData);
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error loading category data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [params]);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!category) {
     notFound();
@@ -43,10 +82,36 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
+            >
+              <Filter className="w-4 h-4" />
+              <span>Filters</span>
+            </button>
+          </div>
+
           {/* Filters Sidebar */}
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-              <div className="flex items-center space-x-2 mb-6">
+          <div className={`lg:w-64 flex-shrink-0 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24">
+              {/* Mobile Filter Header */}
+              <div className="flex items-center justify-between mb-6 lg:hidden">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-5 h-5 text-gray-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                </div>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="p-1 text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Desktop Filter Header */}
+              <div className="hidden lg:flex items-center space-x-2 mb-6">
                 <Filter className="w-5 h-5 text-gray-600" />
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
               </div>

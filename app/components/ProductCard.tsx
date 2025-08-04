@@ -1,28 +1,43 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Star, MapPin } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice, getDiscountPercentage, getConditionColor } from '../utils';
+import { useCart } from '../context/CartContext';
+import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToWishlist, removeFromWishlist, wishlistItems } = useCart();
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
+  
+  const isInWishlist = wishlistItems.some(item => item.id === product.id);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group">
       {/* Image Container */}
       <div className="relative aspect-[3/4] overflow-hidden">
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {isValidImageUrl(product.images[currentImageIndex]) ? (
+          <Image
+            src={product.images[currentImageIndex]}
+            alt={product.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => handleImageError(e)}
+            unoptimized={isExternalImage(product.images[currentImageIndex])}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-500 text-sm">Image not available</span>
+          </div>
+        )}
         
         {/* Discount Badge */}
         {discountPercentage > 0 && (
@@ -32,9 +47,31 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
         
         {/* Wishlist Button */}
-        <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
-          <Heart className="w-4 h-4 text-gray-600" />
+        <button 
+          onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
+          className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
+            isInWishlist 
+              ? 'bg-pink-500 text-white' 
+              : 'bg-white/80 backdrop-blur-sm hover:bg-white text-gray-600'
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
         </button>
+        
+        {/* Image Navigation Dots */}
+        {product.images.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            {product.images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        )}
         
         {/* Condition Badge */}
         <div className="absolute bottom-3 left-3">

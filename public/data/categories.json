@@ -1,0 +1,24 @@
+[
+  {
+    "id": "lehengas",
+    "name": "Lehengas",
+    "description": "Traditional Indian bridal and party wear lehengas",
+    "image": "/images/categories/lehengas.jpg",
+    "productCount": 24
+  },
+  {
+    "id": "traditional-dresses",
+    "name": "Traditional Dresses",
+    "description": "Sarees, salwar kameez, and ethnic wear",
+    "image": "/images/categories/traditional-dresses.jpg",
+    "productCount": 32
+  },
+  
+  {
+    "id": "accessories",
+    "name": "Accessories",
+    "description": "Jewelry, bags, and fashion accessories",
+    "image": "/images/categories/accessories.jpg",
+    "productCount": 28
+  }
+] 
