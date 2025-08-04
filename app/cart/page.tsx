@@ -7,6 +7,7 @@ import { Trash2, Calendar, MapPin, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
+import CheckoutModal from '../components/CheckoutModal';
 
 export default function CartPage() {
   const { 
@@ -17,10 +18,7 @@ export default function CartPage() {
     getCartItemCount,
     clearCart 
   } = useCart();
-  const [rentalDates, setRentalDates] = useState({
-    startDate: '',
-    endDate: ''
-  });
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   const calculateRentalDays = (startDate: string, endDate: string) => {
     if (!startDate || !endDate) return 0;
@@ -157,34 +155,19 @@ export default function CartPage() {
                             </div>
                           </div>
 
-                          {/* Quantity and Remove - Mobile Optimized */}
-                          <div className="flex flex-col sm:flex-col items-start sm:items-end space-y-3">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-sm font-medium text-gray-700">Quantity:</span>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  onClick={() => updateCartItemQuantity(item.product.id, item.quantity - 1)}
-                                  className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  -
-                                </button>
-                                <span className="w-8 text-center font-medium">{item.quantity}</span>
-                                <button
-                                  onClick={() => updateCartItemQuantity(item.product.id, item.quantity + 1)}
-                                  className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => removeFromCart(item.product.id)}
-                              className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span className="text-sm font-medium">Remove</span>
-                            </button>
-                          </div>
+                                                     {/* Remove Button - Mobile Optimized */}
+                           <div className="flex flex-col sm:flex-col items-start sm:items-end space-y-3">
+                             <div className="flex items-center space-x-3">
+                               <span className="text-sm font-medium text-gray-700">Quantity: {item.quantity}</span>
+                             </div>
+                             <button
+                               onClick={() => removeFromCart(item.product.id)}
+                               className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg"
+                             >
+                               <Trash2 className="w-4 h-4" />
+                               <span className="text-sm font-medium">Remove</span>
+                             </button>
+                           </div>
                         </div>
                       </div>
                     </div>
@@ -199,34 +182,7 @@ export default function CartPage() {
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-              {/* Rental Dates */}
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-900 mb-3">Rental Dates</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={rentalDates.startDate}
-                      onChange={(e) => setRentalDates(prev => ({ ...prev, startDate: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={rentalDates.endDate}
-                      onChange={(e) => setRentalDates(prev => ({ ...prev, endDate: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
+
 
               {/* Price Breakdown */}
               <div className="space-y-3 mb-6">
@@ -249,7 +205,10 @@ export default function CartPage() {
               </div>
 
               {/* Rent Now Button */}
-              <button className="w-full bg-pink-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-pink-700 transition-colors">
+              <button 
+                onClick={() => setIsCheckoutModalOpen(true)}
+                className="w-full bg-pink-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-pink-700 transition-colors"
+              >
                 Rent Now
               </button>
 
@@ -263,6 +222,21 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+      
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        cartItems={cartItems}
+        getCartTotal={getCartTotal}
+        getTotalWithDeposits={getTotalWithDeposits}
+        onConfirmOrder={(orderData) => {
+          console.log('Order placed:', orderData);
+          setIsCheckoutModalOpen(false);
+          // Here you would typically send the order to your backend
+          alert('Order placed successfully!');
+        }}
+      />
     </div>
   );
 } 

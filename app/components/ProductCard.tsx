@@ -16,10 +16,11 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { addToWishlist, removeFromWishlist, wishlistItems } = useCart();
+  const { addToWishlist, removeFromWishlist, wishlistItems, cartItems } = useCart();
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
   
   const isInWishlist = wishlistItems.some(item => item.id === product.id);
+  const isInCart = cartItems.some(item => item.product.id === product.id);
 
   // Auto-slide functionality with Framer Motion
   useEffect(() => {
@@ -210,12 +211,21 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Action Buttons */}
         <div className="flex space-x-2">
-          <Link
-            href={`/product/${product.id}`}
-            className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 text-center"
-          >
-            View Details
-          </Link>
+          {isInCart ? (
+            <Link
+              href="/cart"
+              className="flex-1 bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+            >
+              Go to Cart
+            </Link>
+          ) : (
+            <Link
+              href={`/product/${product.id}`}
+              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 text-center"
+            >
+              View Details
+            </Link>
+          )}
           <button
             onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
             className={`p-2 rounded-lg transition-all duration-200 ${

@@ -136,13 +136,39 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-gray-700"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Cart and Wishlist Icons */}
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+              <Heart className="w-5 h-5" />
+              {wishlistCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  {wishlistCount}
+                </motion.span>
+              )}
+            </Link>
+            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+              <ShoppingBag className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  {cartItemCount}
+                </motion.span>
+              )}
+            </Link>
+            <button
+              className="p-2 text-gray-700"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}

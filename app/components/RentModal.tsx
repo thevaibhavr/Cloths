@@ -33,12 +33,13 @@ export default function RentModal({
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    // If rental is 3 or more days, count middle days
-    // If rental is less than 3 days, count as 1 day minimum
-    if (days >= 3) {
-      return days;
+    // Don't count start date, only count middle days
+    // For rentals under 3 days, count as 1 day minimum
+    // For rentals 3+ days, count the days between start and end (excluding start date)
+    if (days < 3) {
+      return 1; // Minimum 1 day for short rentals
     } else {
-      return 1; // Minimum 1 day for rentals under 3 days
+      return days; // Count all days between start and end (including end date)
     }
   };
 
