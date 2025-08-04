@@ -3,7 +3,6 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { CartProvider } from "./context/CartContext";
-import NotificationWrapper from "./components/NotificationWrapper";
 
 export const metadata: Metadata = {
   title: "RentElegance - Rent Designer Clothes for Every Occasion",
@@ -25,7 +24,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <NotificationWrapper />
         </CartProvider>
       </body>
     </html>
