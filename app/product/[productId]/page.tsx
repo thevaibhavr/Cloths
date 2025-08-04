@@ -7,8 +7,10 @@ import { getProductById, getCategoryById } from '../../data/products';
 import { formatPrice, formatDate, formatJoinDate, getConditionColor, getDiscountPercentage } from '../../utils';
 import { ArrowLeft, Star, MapPin, Calendar, Clock, Shield, Truck, Heart, Share2, MessageCircle, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { isExternalImage, isValidImageUrl, handleImageError } from '../../utils/imageUtils';
+import RentModal from '../../components/RentModal';
 
 interface ProductPageProps {
   params: Promise<{
@@ -21,6 +23,11 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [product, setProduct] = useState<any>(null);
   const [categoryData, setCategoryData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isRentModalOpen, setIsRentModalOpen] = useState(false);
+  const [rentalDates, setRentalDates] = useState({
+    startDate: '',
+    endDate: ''
+  });
   const { addToCart, addToWishlist, removeFromWishlist, wishlistItems } = useCart();
 
   // Auto-slide functionality
@@ -62,6 +69,15 @@ export default function ProductPage({ params }: ProductPageProps) {
 
     setTouchStart(0);
     setTouchEnd(0);
+  };
+
+  const handleRentNow = () => {
+    setIsRentModalOpen(true);
+  };
+
+  const handleConfirmRent = () => {
+    addToCart(product, 1, rentalDates);
+    setIsRentModalOpen(false);
   };
 
   useEffect(() => {
@@ -139,20 +155,31 @@ export default function ProductPage({ params }: ProductPageProps) {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {isValidImageUrl(product.images[selectedImage]) ? (
-                <Image
-                  src={product.images[selectedImage]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  onError={(e) => handleImageError(e)}
-                  unoptimized={isExternalImage(product.images[selectedImage])}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 text-sm">Image not available</span>
-                </div>
-              )}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedImage}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  {isValidImageUrl(product.images[selectedImage]) ? (
+                    <Image
+                      src={product.images[selectedImage]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      onError={(e) => handleImageError(e)}
+                      unoptimized={isExternalImage(product.images[selectedImage])}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">Image not available</span>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
                   {discountPercentage}% OFF
@@ -271,32 +298,34 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Owner Info */}
             <div className="bg-white border border-gray-200 rounded-xl p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Item Owner</h3>
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">
-                    {product.owner.name.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h4 className="font-medium text-gray-900">{product.owner.name}</h4>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">{product.owner.rating}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-lg">
+                      {product.owner.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                      <h4 className="font-medium text-gray-900 truncate">{product.owner.name}</h4>
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-gray-600">{product.owner.rating}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{product.owner.location}</span>
+                      </div>
+                      <span className="hidden sm:inline">•</span>
+                      <span>{product.owner.totalRentals} rentals</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span>Joined {formatJoinDate(product.owner.joinDate)}</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>{product.owner.location}</span>
-                    </div>
-                    <span>•</span>
-                    <span>{product.owner.totalRentals} rentals</span>
-                    <span>•</span>
-                    <span>Joined {formatJoinDate(product.owner.joinDate)}</span>
-                  </div>
                 </div>
-                <button className="flex items-center space-x-2 text-pink-600 hover:text-pink-700 transition-colors">
+                <button className="flex items-center justify-center sm:justify-start space-x-2 text-pink-600 hover:text-pink-700 transition-colors bg-pink-50 hover:bg-pink-100 px-4 py-2 rounded-lg">
                   <MessageCircle className="w-4 h-4" />
                   <span className="text-sm font-medium">Message</span>
                 </button>
@@ -323,23 +352,18 @@ export default function ProductPage({ params }: ProductPageProps) {
 
             {/* Action Buttons */}
             <div className="space-y-4">
-              <button 
-                onClick={() => {
-                  const startDate = new Date();
-                  const endDate = new Date();
-                  endDate.setDate(endDate.getDate() + product.rentalDuration);
-                  
-                  addToCart(product, 1, {
-                    startDate: startDate.toISOString().split('T')[0],
-                    endDate: endDate.toISOString().split('T')[0]
-                  });
-                }}
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleRentNow}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <ShoppingBag className="w-5 h-5" />
                 <span>Rent Now - {formatPrice(product.price)}</span>
-              </button>
-              <button 
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
                 className={`w-full py-4 rounded-xl text-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
                   isInWishlist 
@@ -349,7 +373,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               >
                 <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
                 <span>{isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
-              </button>
+              </motion.button>
             </div>
 
             {/* Trust Indicators */}
@@ -392,6 +416,16 @@ export default function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
       </div>
+      
+      {/* Rent Modal */}
+      <RentModal
+        isOpen={isRentModalOpen}
+        onClose={() => setIsRentModalOpen(false)}
+        product={product}
+        rentalDates={rentalDates}
+        onRentalDatesChange={setRentalDates}
+        onConfirmRent={handleConfirmRent}
+      />
     </div>
   );
 } 

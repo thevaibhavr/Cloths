@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Star, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../types';
 import { formatPrice, getDiscountPercentage, getConditionColor } from '../utils';
 import { useCart } from '../context/CartContext';
@@ -20,7 +21,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   
   const isInWishlist = wishlistItems.some(item => item.id === product.id);
 
-  // Auto-slide functionality
+  // Auto-slide functionality with Framer Motion
   useEffect(() => {
     if (product.images.length > 1) {
       const interval = setInterval(() => {
@@ -62,7 +63,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group">
+    <motion.div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+    >
       {/* Image Container */}
       <div 
         className="relative aspect-[3/4] overflow-hidden"
@@ -70,20 +77,31 @@ export default function ProductCard({ product }: ProductCardProps) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {isValidImageUrl(product.images[currentImageIndex]) ? (
-          <Image
-            src={product.images[currentImageIndex]}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => handleImageError(e)}
-            unoptimized={isExternalImage(product.images[currentImageIndex])}
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-500 text-sm">Image not available</span>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentImageIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full"
+          >
+            {isValidImageUrl(product.images[currentImageIndex]) ? (
+              <Image
+                src={product.images[currentImageIndex]}
+                alt={product.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => handleImageError(e)}
+                unoptimized={isExternalImage(product.images[currentImageIndex])}
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500 text-sm">Image not available</span>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
         
         {/* Discount Badge */}
         {discountPercentage > 0 && (
@@ -203,6 +221,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 

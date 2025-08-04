@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Search, ShoppingBag, User, Menu, X, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
 export default function Header() {
@@ -11,10 +12,20 @@ export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const { getCartItemCount, getWishlistCount } = useCart();
 
+  const cartItemCount = getCartItemCount();
+  const wishlistCount = getWishlistCount();
+  const hasItems = cartItemCount > 0 || wishlistCount > 0;
+
   // Handle scroll to hide/show header
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      
+      // If there are items in cart/wishlist, always show header
+      if (hasItems) {
+        setIsVisible(true);
+        return;
+      }
       
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down - hide header
@@ -29,7 +40,7 @@ export default function Header() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, hasItems]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -49,7 +60,7 @@ export default function Header() {
   return (
     <header className={`bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
+    } ${hasItems ? 'shadow-lg' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -92,18 +103,26 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <Heart className="w-5 h-5" />
-              {getWishlistCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {getWishlistCount()}
-                </span>
+              {wishlistCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  {wishlistCount}
+                </motion.span>
               )}
             </Link>
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
-              {getCartItemCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {getCartItemCount()}
-                </span>
+              {cartItemCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  {cartItemCount}
+                </motion.span>
               )}
             </Link>
             <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
