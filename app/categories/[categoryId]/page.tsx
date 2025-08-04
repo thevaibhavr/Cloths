@@ -83,19 +83,19 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Mobile Filter Toggle */}
-          <div className="lg:hidden">
+          <div className="lg:hidden mb-4">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
+              className="flex items-center space-x-2 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200 w-full justify-center"
             >
               <Filter className="w-4 h-4" />
-              <span>Filters</span>
+              <span className="font-medium">Filters</span>
             </button>
           </div>
 
           {/* Filters Sidebar */}
           <div className={`lg:w-64 flex-shrink-0 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24">
+            <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24 max-h-[80vh] lg:max-h-none overflow-y-auto">
               {/* Mobile Filter Header */}
               <div className="flex items-center justify-between mb-6 lg:hidden">
                 <div className="flex items-center space-x-2">
@@ -211,7 +211,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
             {/* Products */}
             {products.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

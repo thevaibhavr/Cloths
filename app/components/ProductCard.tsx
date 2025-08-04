@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Star, MapPin } from 'lucide-react';
@@ -20,10 +20,56 @@ export default function ProductCard({ product }: ProductCardProps) {
   
   const isInWishlist = wishlistItems.some(item => item.id === product.id);
 
+  // Auto-slide functionality
+  useEffect(() => {
+    if (product.images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [product.images.length]);
+
+  // Touch/swipe functionality
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+    if (isRightSwipe) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group">
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div 
+        className="relative aspect-[3/4] overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {isValidImageUrl(product.images[currentImageIndex]) ? (
           <Image
             src={product.images[currentImageIndex]}

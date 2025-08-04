@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { CartProvider } from "./context/CartContext";
+import NotificationWrapper from "./components/NotificationWrapper";
 
 export const metadata: Metadata = {
   title: "RentElegance - Rent Designer Clothes for Every Occasion",
@@ -20,10 +21,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-gray-50">
         <CartProvider>
           <Header />
-          <main>
+          <main className="pt-16">
             {children}
           </main>
           <Footer />
+          <NotificationWrapper />
         </CartProvider>
       </body>
     </html>

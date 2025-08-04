@@ -23,6 +23,47 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [loading, setLoading] = useState(true);
   const { addToCart, addToWishlist, removeFromWishlist, wishlistItems } = useCart();
 
+  // Auto-slide functionality
+  useEffect(() => {
+    if (product && product.images.length > 1) {
+      const interval = setInterval(() => {
+        setSelectedImage((prev) => (prev + 1) % product.images.length);
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [product]);
+
+  // Touch/swipe functionality
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || !product) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setSelectedImage((prev) => (prev + 1) % product.images.length);
+    }
+    if (isRightSwipe) {
+      setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   useEffect(() => {
     const loadProduct = async () => {
       try {
@@ -92,7 +133,12 @@ export default function ProductPage({ params }: ProductPageProps) {
           {/* Product Images */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-[3/4] bg-white rounded-xl overflow-hidden">
+            <div 
+              className="relative aspect-[3/4] bg-white rounded-xl overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {isValidImageUrl(product.images[selectedImage]) ? (
                 <Image
                   src={product.images[selectedImage]}

@@ -24,6 +24,14 @@ interface CartContextType {
   getCartTotal: () => number;
   getCartItemCount: () => number;
   getWishlistCount: () => number;
+  notification: {
+    message: string;
+    type: 'success' | 'error' | 'info';
+    action?: 'cart' | 'wishlist';
+    isVisible: boolean;
+  };
+  showNotification: (message: string, type: 'success' | 'error' | 'info', action?: 'cart' | 'wishlist') => void;
+  hideNotification: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,6 +39,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+    action?: 'cart' | 'wishlist';
+    isVisible: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    action: undefined,
+    isVisible: false
+  });
 
   // Load cart and wishlist from localStorage on mount
   useEffect(() => {
@@ -69,12 +88,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existingItem = prev.find(item => item.product.id === product.id);
       
       if (existingItem) {
+        showNotification(`${product.name} quantity updated in cart`, 'success', 'cart');
         return prev.map(item =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
+        showNotification(`${product.name} added to cart`, 'success', 'cart');
         return [...prev, { product, quantity, rentalDates }];
       }
     });
@@ -103,6 +124,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setWishlistItems(prev => {
       const exists = prev.some(item => item.id === product.id);
       if (!exists) {
+        showNotification(`${product.name} added to wishlist`, 'success', 'wishlist');
         return [...prev, product];
       }
       return prev;
@@ -110,7 +132,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromWishlist = (productId: string) => {
-    setWishlistItems(prev => prev.filter(item => item.id !== productId));
+    setWishlistItems(prev => {
+      const item = prev.find(item => item.id === productId);
+      if (item) {
+        showNotification(`${item.name} removed from wishlist`, 'info', 'wishlist');
+      }
+      return prev.filter(item => item.id !== productId);
+    });
   };
 
   const clearCart = () => {
@@ -131,6 +159,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return wishlistItems.length;
   };
 
+  const showNotification = (message: string, type: 'success' | 'error' | 'info', action?: 'cart' | 'wishlist') => {
+    setNotification({
+      message,
+      type,
+      action,
+      isVisible: true
+    });
+  };
+
+  const hideNotification = () => {
+    setNotification(prev => ({ ...prev, isVisible: false }));
+  };
+
   const value = {
     cartItems,
     wishlistItems,
@@ -143,6 +184,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     getCartTotal,
     getCartItemCount,
     getWishlistCount,
+    notification,
+    showNotification,
+    hideNotification,
   };
 
   return (
