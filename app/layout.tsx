@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Rent the moment - Rent Designer Clothes for Every Occasion",
   description: "India's premier clothing rental platform. Rent designer lehengas, western dresses, traditional wear, shoes, and accessories for special occasions.",
   keywords: "clothing rental, lehenga rental, dress rental, designer clothes, fashion rental, India",
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
