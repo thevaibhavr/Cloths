@@ -1,27 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useCart } from '../context/CartContext';
-import { formatPrice } from '../utils';
-import { Trash2, Calendar, MapPin, Star } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
-import CheckoutModal from '../components/CheckoutModal';
+import Image from 'next/image';
+import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { formatPrice } from '../utils';
 
 export default function CartPage() {
-  const { 
-    cartItems, 
-    removeFromCart, 
-    updateCartItemQuantity, 
-    getCartTotal, 
-    getCartItemCount,
-    clearCart 
-  } = useCart();
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const { cart, removeFromCart, updateCartItem, clearCart, getCartTotal } = useCart();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const calculateRentalDays = (startDate: string, endDate: string) => {
-    if (!startDate || !endDate) return 0;
+  const calculateDays = (startDate: string, endDate: string) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -29,214 +22,296 @@ export default function CartPage() {
     return diffDays;
   };
 
-  const getTotalWithDeposits = () => {
-    const rentalTotal = getCartTotal();
-    const depositsTotal = cartItems.reduce((total, item) => {
-      return total + (item.product.deposit || 0);
-    }, 0);
-    return rentalTotal + depositsTotal;
+  const calculateRentalDays = (startDate: string, endDate: string) => {
+    const days = calculateDays(startDate, endDate);
+    if (days <= 2) return 1;
+    return days - 1; // Don't count start and end dates
   };
 
-  if (cartItems.length === 0) {
+  const handleQuantityChange = (productId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      const item = cart.items.find(item => item.product._id === productId);
+      if (item) {
+        updateCartItem(productId, newQuantity, item.rentalDuration);
+      }
+    }
+  };
+
+  const handleDateChange = (productId: string, startDate: string, endDate: string) => {
+    const rentalDays = calculateRentalDays(startDate, endDate);
+    const item = cart.items.find(item => item.product._id === productId);
+    if (item) {
+      updateCartItem(productId, item.quantity, rentalDays);
+    }
+  };
+
+  const handleCheckout = () => {
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    window.location.href = '/checkout';
+  };
+
+  if (cart.items.length === 0) {
     return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gray-50 py-12"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="text-gray-400 mb-6">
-              <svg className="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
-            <p className="text-gray-600 mb-8">
-              Looks like you haven't added any items to your cart yet.
-            </p>
-            <Link
-              href="/categories"
-              className="inline-flex items-center px-6 py-3 bg-pink-600 text-white font-medium rounded-lg hover:bg-pink-700 transition-colors"
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              Start Shopping
-            </Link>
+              <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
+            </motion.div>
+            <motion.h2 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-4 text-lg font-medium text-gray-900"
+            >
+              Your cart is empty
+            </motion.h2>
+            <motion.p 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mt-2 text-sm text-gray-500"
+            >
+              Start shopping to add items to your cart
+            </motion.p>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-6"
+            >
+              <Link
+                href="/categories"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Continue Shopping
+              </Link>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Cart Items */}
-          <div className="flex-1">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
-                <button
-                  onClick={clearCart}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium"
-                >
-                  Clear Cart
-                </button>
-              </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gray-50 py-8 sm:py-12"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="flex items-center mb-6 sm:mb-8"
+        >
+          <Link
+            href="/"
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Continue Shopping
+          </Link>
+        </motion.div>
 
-              <div className="space-y-4">
-                {cartItems.map((item) => (
-                  <div key={item.product.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                    {/* Mobile Layout */}
-                    <div className="flex flex-col sm:flex-row">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:items-start">
+          <div className="lg:col-span-7">
+            <motion.h1 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8"
+            >
+              Shopping Cart
+            </motion.h1>
+            
+            <div className="space-y-4 sm:space-y-6">
+              <AnimatePresence>
+                {cart.items.map((item, index) => (
+                  <motion.div
+                    key={item.product._id}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 50, opacity: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
                       {/* Product Image */}
-                      <div className="relative w-full h-48 sm:w-24 sm:h-32 flex-shrink-0">
-                        {isValidImageUrl(item.product.images[0]) ? (
-                          <Image
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            fill
-                            className="object-cover"
-                            onError={(e) => handleImageError(e)}
-                            unoptimized={isExternalImage(item.product.images[0])}
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">Image</span>
-                          </div>
-                        )}
+                      <div className="flex-shrink-0 mx-auto sm:mx-0">
+                        <Image
+                          src={item.product.images[0] || '/placeholder-image.jpg'}
+                          alt={item.product.name}
+                          width={80}
+                          height={80}
+                          className="rounded-lg object-cover"
+                        />
                       </div>
 
                       {/* Product Details */}
-                      <div className="flex-1 p-4">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 mb-2 text-lg">
-                              {item.product.name}
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">
+                              <Link href={`/product/${item.product.slug}`} className="hover:text-pink-600">
+                                {item.product.name}
+                              </Link>
                             </h3>
-                            <p className="text-sm text-gray-600 mb-3">
-                              Size: {item.product.size} • Condition: {item.product.condition}
+                            <p className="text-sm text-gray-500 mb-3">
+                              {item.product.category.name} • Size: {item.product.size} • Color: {item.product.color}
                             </p>
-                            
-                            {/* Owner Info - Mobile Optimized */}
-                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3">
-                              <div className="flex items-center space-x-2">
-                                <div className="flex items-center space-x-1">
-                                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                  <span className="text-sm text-gray-600">
-                                    {item.product.owner.rating}
-                                  </span>
-                                </div>
-                                <span className="text-gray-400 hidden sm:inline">•</span>
-                                <div className="flex items-center space-x-1">
-                                  <MapPin className="w-4 h-4 text-gray-400" />
-                                  <span className="text-sm text-gray-600 truncate">
-                                    {item.product.owner.location}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeFromCart(item.product._id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors self-start sm:self-auto"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
 
-                            {/* Rental Dates */}
-                            <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-                              <Calendar className="w-4 h-4" />
-                              <span className="truncate">
-                                {item.rentalDates.startDate} - {item.rentalDates.endDate}
-                              </span>
-                            </div>
-
-                            {/* Price */}
-                            <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-                              <span className="text-lg font-semibold text-gray-900">
-                                {formatPrice(item.product.price)}
-                              </span>
-                              {item.product.originalPrice > item.product.price && (
-                                <span className="text-sm text-gray-500 line-through">
-                                  {formatPrice(item.product.originalPrice)}
-                                </span>
-                              )}
-                              <span className="text-sm text-gray-600">per day</span>
-                            </div>
+                        <div className="space-y-4">
+                          {/* Quantity Display */}
+                          <div className="flex items-center justify-between sm:justify-start">
+                            <span className="text-sm font-medium text-gray-700">Quantity: {item.quantity}</span>
                           </div>
 
-                                                     {/* Remove Button - Mobile Optimized */}
-                           <div className="flex flex-col sm:flex-col items-start sm:items-end space-y-3">
-                             <div className="flex items-center space-x-3">
-                               <span className="text-sm font-medium text-gray-700">Quantity: {item.quantity}</span>
-                             </div>
-                             <button
-                               onClick={() => removeFromCart(item.product.id)}
-                               className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg"
-                             >
-                               <Trash2 className="w-4 h-4" />
-                               <span className="text-sm font-medium">Remove</span>
-                             </button>
-                           </div>
+                          {/* Date Selection */}
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm font-medium text-gray-700">Rental Dates:</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+                                <input
+                                  type="date"
+                                  min={new Date().toISOString().split('T')[0]}
+                                  value={item.rentalDates?.startDate || ''}
+                                  onChange={(e) => {
+                                    const endDate = new Date(e.target.value);
+                                    endDate.setDate(endDate.getDate() + 1);
+                                    handleDateChange(item.product._id, e.target.value, endDate.toISOString().split('T')[0]);
+                                  }}
+                                  className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">End Date</label>
+                                <input
+                                  type="date"
+                                  min={new Date().toISOString().split('T')[0]}
+                                  value={item.rentalDates?.endDate || ''}
+                                  onChange={(e) => {
+                                    const startDate = new Date();
+                                    handleDateChange(item.product._id, startDate.toISOString().split('T')[0], e.target.value);
+                                  }}
+                                  className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              Rental days: {item.rentalDuration} day{item.rentalDuration !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+
+                          {/* Price */}
+                          <div className="text-right">
+                            <p className="text-lg font-semibold text-gray-900">
+                              {formatPrice(item.product.price * item.quantity * item.rentalDuration)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {formatPrice(item.product.price)} × {item.quantity} × {item.rentalDuration} days
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </AnimatePresence>
             </div>
+
+            {/* Clear Cart Button */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-6"
+            >
+              <button
+                onClick={clearCart}
+                className="text-sm text-gray-500 hover:text-red-600 transition-colors"
+              >
+                Clear all items
+              </button>
+            </motion.div>
           </div>
 
           {/* Order Summary */}
-          <div className="lg:w-80 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
-
-
-
-              {/* Price Breakdown */}
-              <div className="space-y-3 mb-6">
+          <motion.div 
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-5 mt-6 lg:mt-0"
+          >
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:sticky lg:top-8">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
+              
+              <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Rental Total ({getCartItemCount()} items)</span>
+                  <span className="text-gray-600">Subtotal ({cart.items.length} items)</span>
                   <span className="text-gray-900">{formatPrice(getCartTotal())}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Security Deposits</span>
-                  <span className="text-gray-900">
-                    {formatPrice(cartItems.reduce((total, item) => total + (item.product.deposit || 0), 0))}
-                  </span>
+                  <span className="text-gray-600">Delivery</span>
+                  <span className="text-green-600">Free</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Security Deposit</span>
+                  <span className="text-gray-900">₹0.00</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">{formatPrice(getTotalWithDeposits())}</span>
+                  <div className="flex justify-between text-lg font-semibold">
+                    <span>Total</span>
+                    <span>{formatPrice(getCartTotal())}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Rent Now Button */}
-              <button 
-                onClick={() => setIsCheckoutModalOpen(true)}
-                className="w-full bg-pink-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-pink-700 transition-colors"
+              <button
+                onClick={handleCheckout}
+                disabled={loading || cart.items.length === 0}
+                className="w-full mt-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Rent Now
+                {loading ? 'Processing...' : 'Proceed to Checkout'}
               </button>
 
-              {/* Additional Info */}
-              <div className="mt-4 text-xs text-gray-500 space-y-1">
-                <p>• Security deposits are refundable after return</p>
-                <p>• Free delivery for orders above ₹2,000</p>
-                <p>• 24/7 customer support</p>
-              </div>
+              {!user && (
+                <p className="text-sm text-gray-500 mt-3 text-center">
+                  <Link href="/login" className="text-pink-600 hover:text-pink-500">
+                    Sign in
+                  </Link>{' '}
+                  to complete your order
+                </p>
+              )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-      
-      {/* Checkout Modal */}
-      <CheckoutModal
-        isOpen={isCheckoutModalOpen}
-        onClose={() => setIsCheckoutModalOpen(false)}
-        cartItems={cartItems}
-        getCartTotal={getCartTotal}
-        getTotalWithDeposits={getTotalWithDeposits}
-        onConfirmOrder={(orderData) => {
-          console.log('Order placed:', orderData);
-          setIsCheckoutModalOpen(false);
-          // Here you would typically send the order to your backend
-          alert('Order placed successfully!');
-        }}
-      />
-    </div>
+    </motion.div>
   );
 } 

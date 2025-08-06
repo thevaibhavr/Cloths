@@ -1,6 +1,6 @@
 'use client';
 
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext';
 import { CheckCircle, X, ShoppingBag, Heart } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -45,7 +45,7 @@ export default function NotificationWrapper() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-80">
-      <div className={`${getBgColor()} text-white rounded-lg shadow-lg p-4 flex items-center space-x-3 animate-slide-up`}>
+      <div className={`${getBgColor()} text-white rounded-lg shadow-lg p-4 flex items-center space-x-3`}>
         <div className="flex-shrink-0">
           {getIcon()}
         </div>

@@ -104,7 +104,7 @@ export default function HowItWorksPage() {
       <div className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose RentElegance?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Rent the moment?</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               We make fashion accessible, sustainable, and hassle-free
             </p>
@@ -211,7 +211,7 @@ export default function HowItWorksPage() {
             Ready to Start Renting?
           </h2>
           <p className="text-xl text-pink-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of customers who trust RentElegance for their special occasions
+            Join thousands of customers who trust Rent the moment for their special occasions
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

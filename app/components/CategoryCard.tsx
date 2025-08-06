@@ -11,7 +11,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <Link href={`/categories/${category.id}`}>
+    <Link href={`/categories/${category.slug}`}>
       <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
@@ -34,7 +34,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
-                  {category.productCount} items available
+                  Browse collection
                 </span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
               </div>

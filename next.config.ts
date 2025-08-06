@@ -63,6 +63,25 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Add domains from the API data
+      {
+        protocol: 'https',
+        hostname: 'shobitam.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.tanomcloset.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   turbopack: {

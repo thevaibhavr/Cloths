@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 const banners = [
   {
     id: 1,
-    image: '/images/categories/lehengas.jpg',
+    image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
     title: 'Designer Lehengas',
     subtitle: 'Stunning bridal and party wear collection',
     cta: 'Shop Lehengas',
@@ -16,7 +17,7 @@ const banners = [
   },
   {
     id: 2,
-    image: '/images/categories/traditional-dresses.jpg',
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
     title: 'Traditional Dresses',
     subtitle: 'Elegant sarees and ethnic wear',
     cta: 'Explore Traditional',
@@ -24,7 +25,7 @@ const banners = [
   },
   {
     id: 3,
-    image: '/images/categories/suits.jpg',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
     title: 'Professional Suits',
     subtitle: 'Corporate and formal wear collection',
     cta: 'View Suits',
@@ -32,7 +33,7 @@ const banners = [
   },
   {
     id: 4,
-    image: '/images/categories/accessories.jpg',
+    image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
     title: 'Fashion Accessories',
     subtitle: 'Complete your look with our accessories',
     cta: 'Shop Accessories',
@@ -67,69 +68,95 @@ export default function HeroSlider() {
   return (
     <section className="relative h-[600px] overflow-hidden bg-gray-900">
       {/* Slides */}
-      <div className="relative h-full">
+      <AnimatePresence mode="wait">
         {banners.map((banner, index) => (
-          <div
-            key={banner.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            {/* Background Image */}
-            <div className="relative h-full">
-              <Image
-                src={banner.image}
-                alt={banner.title}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-              
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/40" />
-              
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white max-w-4xl mx-auto px-4">
-                  <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                    {banner.title}
-                  </h1>
-                  <p className="text-xl md:text-2xl mb-8 text-gray-200">
-                    {banner.subtitle}
-                  </p>
-                  <Link
-                    href={banner.link}
-                    className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                  >
-                    {banner.cta}
-                  </Link>
+          index === currentSlide && (
+            <motion.div
+              key={banner.id}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              {/* Background Image */}
+              <div className="relative h-full">
+                <Image
+                  src={banner.image}
+                  alt={banner.title}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/40" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center text-white max-w-4xl mx-auto px-4">
+                    <motion.h1 
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                      className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+                    >
+                      {banner.title}
+                    </motion.h1>
+                    <motion.p 
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                      className="text-xl md:text-2xl mb-8 text-gray-200"
+                    >
+                      {banner.subtitle}
+                    </motion.p>
+                    <motion.div
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.7, duration: 0.8 }}
+                    >
+                      <Link
+                        href={banner.link}
+                        className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      >
+                        {banner.cta}
+                      </Link>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          )
         ))}
-      </div>
+      </AnimatePresence>
 
       {/* Navigation Arrows */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={prevSlide}
         className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200 z-10"
       >
         <ChevronLeft className="w-6 h-6" />
-      </button>
+      </motion.button>
       
-      <button
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={nextSlide}
         className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200 z-10"
       >
         <ChevronRight className="w-6 h-6" />
-      </button>
+      </motion.button>
 
       {/* Dots Indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-10">
         {banners.map((_, index) => (
-          <button
+          <motion.button
             key={index}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-200 ${
               index === currentSlide
@@ -142,11 +169,11 @@ export default function HeroSlider() {
 
       {/* Progress Bar */}
       <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
-        <div
-          className="h-full bg-gradient-to-r from-pink-500 to-purple-600 transition-all duration-1000 ease-linear"
-          style={{
-            width: `${((currentSlide + 1) / banners.length) * 100}%`
-          }}
+        <motion.div
+          className="h-full bg-gradient-to-r from-pink-500 to-purple-600"
+          initial={{ width: 0 }}
+          animate={{ width: `${((currentSlide + 1) / banners.length) * 100}%` }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
         />
       </div>
     </section>

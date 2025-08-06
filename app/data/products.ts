@@ -1,43 +1,96 @@
-import { Category, Product } from '../types';
+import { apiService } from '../services/api';
+import { Category, Product, PaginatedResponse } from '../types';
 
-// Fetch categories from JSON file
+// Get all categories
 export async function getCategories(): Promise<Category[]> {
   try {
-    const response = await fetch('/data/categories.json');
-    const categories = await response.json();
-    return categories;
+    return await apiService.getCategories();
   } catch (error) {
-    console.error('Error loading categories:', error);
+    console.error('Error fetching categories:', error);
     return [];
   }
 }
 
-// Fetch products from JSON file
-export async function getProducts(): Promise<Product[]> {
+// Get category by ID
+export async function getCategoryById(id: string): Promise<Category> {
   try {
-    const response = await fetch('/data/products.json');
-    const products = await response.json();
-    return products;
+    return await apiService.getCategory(id);
   } catch (error) {
-    console.error('Error loading products:', error);
-    return [];
+    console.error('Error fetching category by ID:', error);
+    throw error;
+  }
+}
+
+// Get category by slug
+export async function getCategoryBySlug(slug: string): Promise<Category> {
+  try {
+    return await apiService.getCategoryBySlug(slug);
+  } catch (error) {
+    console.error('Error fetching category by slug:', error);
+    throw error;
+  }
+}
+
+// Get all products with pagination and filters
+export async function getProducts(
+  page: number = 1,
+  limit: number = 12,
+  filters: {
+    search?: string;
+    category?: string;
+    featured?: boolean;
+    sort?: string;
+    order?: string;
+  } = {}
+): Promise<PaginatedResponse<Product>> {
+  try {
+    return await apiService.getProducts(page, limit, filters);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return {
+      products: [],
+      totalPages: 1,
+      currentPage: 1,
+      total: 0
+    };
   }
 }
 
 // Get products by category
-export async function getProductsByCategory(categoryId: string): Promise<Product[]> {
-  const products = await getProducts();
-  return products.filter(product => product.category === categoryId);
+export async function getProductsByCategory(
+  categoryId: string,
+  page: number = 1,
+  limit: number = 12
+): Promise<PaginatedResponse<Product>> {
+  try {
+    return await apiService.getProductsByCategory(categoryId, page, limit);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    return {
+      products: [],
+      totalPages: 1,
+      currentPage: 1,
+      total: 0
+    };
+  }
 }
 
-// Get product by ID
-export async function getProductById(id: string): Promise<Product | undefined> {
-  const products = await getProducts();
-  return products.find(product => product.id === id);
+// Get single product by slug
+export async function getProductBySlug(slug: string): Promise<Product> {
+  try {
+    return await apiService.getProductBySlug(slug);
+  } catch (error) {
+    console.error('Error fetching product by slug:', error);
+    throw error;
+  }
 }
 
-// Get category by ID
-export async function getCategoryById(id: string): Promise<Category | undefined> {
-  const categories = await getCategories();
-  return categories.find(category => category.id === id);
+// Get single product by ID
+export async function getProductById(id: string): Promise<Product> {
+  try {
+    return await apiService.getProduct(id);
+  } catch (error) {
+    console.error('Error fetching product by ID:', error);
+    throw error;
+  }
 } 

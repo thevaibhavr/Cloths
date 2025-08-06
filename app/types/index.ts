@@ -1,49 +1,178 @@
+// API Response Types
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+  error?: string;
+}
+
+export interface PaginatedResponse<T> {
+  products?: T[];
+  categories?: T[];
+  orders?: T[];
+  totalPages: number;
+  currentPage: number;
+  total: number;
+}
+
+// User Types
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'user' | 'admin';
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  isActive: boolean;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Category Types
 export interface Category {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   image: string;
-  productCount: number;
+  slug: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
+// Product Types
 export interface Product {
-  id: string;
+  _id: string;
   name: string;
   description: string;
-  category: string;
+  category: Category;
   price: number;
   originalPrice: number;
-  size: string;
-  condition: 'Excellent' | 'Good' | 'Fair';
-  brand: string;
-  material: string;
+  size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'Free Size';
   color: string;
+  rentalDuration: number;
+  condition: 'Excellent' | 'Very Good' | 'Good' | 'Fair';
+  brand?: string;
+  material?: string;
   images: string[];
-  owner: {
-    name: string;
-    rating: number;
-    totalRentals: number;
-    location: string;
-    joinDate: string;
-  };
-  availability: {
-    startDate: string;
-    endDate: string;
-    isAvailable: boolean;
-  };
   tags: string[];
-  rentalDuration: number; // in days
-  deposit: number;
+  careInstructions?: string;
+  isFeatured: boolean;
+  isAvailable: boolean;
+  views: number;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface User {
-  id: string;
+// Order Types
+export interface OrderItem {
+  product: Product;
+  quantity: number;
+  rentalDuration: number;
+  price: number;
+}
+
+export interface Order {
+  _id: string;
+  orderNumber: string;
+  user: User;
+  items: OrderItem[];
+  totalAmount: number;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  orderStatus: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Returned' | 'Cancelled';
+  paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+  paymentMethod: string;
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Auth Types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
   name: string;
   email: string;
-  avatar: string;
-  rating: number;
-  totalRentals: number;
-  location: string;
-  joinDate: string;
-  verified: boolean;
+  password: string;
+  phone?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+// Cart Types
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  rentalDuration: number;
+  rentalDates?: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export interface Cart {
+  items: CartItem[];
+  totalAmount: number;
+}
+
+// Form Data Types
+export interface CreateOrderData {
+  items: {
+    product: string;
+    quantity: number;
+    rentalDuration: number;
+  }[];
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  paymentMethod: string;
+}
+
+export interface UpdateProfileData {
+  name?: string;
+  phone?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+}
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
 } 

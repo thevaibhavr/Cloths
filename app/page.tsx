@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import HeroSlider from './components/HeroSlider';
 import CategoryCard from './components/CategoryCard';
 import ProductCard from './components/ProductCard';
@@ -19,10 +20,10 @@ export default function Home() {
       try {
         const [categoriesData, productsData] = await Promise.all([
           getCategories(),
-          getProducts()
+          getProducts(1, 12, { featured: true })
         ]);
         setCategories(categoriesData);
-        setProducts(productsData);
+        setProducts(productsData.products || []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -35,41 +36,103 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-gray-50 min-h-screen flex items-center justify-center"
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"
+          ></motion.div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   const featuredProducts = products.slice(0, 6);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       {/* Hero Slider */}
       <HeroSlider />
 
       {/* Categories Section */}
-      <section className="py-16 bg-white">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-16 bg-white"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Browse by Category
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Find the perfect outfit for any occasion from our curated collection of designer clothes
             </p>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {categories.map((category, index) => (
+              <motion.div
+                key={category._id}
+                variants={itemVariants}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <CategoryCard category={category} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           
-          <div className="text-center mt-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
             <Link
               href="/categories"
               className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
@@ -77,167 +140,185 @@ export default function Home() {
               <span>View All Categories</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Featured Products Section */}
-      <section className="py-16 bg-gray-50">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-16 bg-gray-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Featured Items
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Handpicked designer pieces for your special occasions
             </p>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {featuredProducts.map((product, index) => (
+              <motion.div
+                key={product._id}
+                variants={itemVariants}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           
-          <div className="text-center mt-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 bg-white text-gray-900 border-2 border-gray-300 px-6 py-3 rounded-lg hover:border-pink-500 hover:text-pink-600 transition-all duration-200 font-medium"
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
             >
               <span>View All Products</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How It Works
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Rent designer clothes in just 3 simple steps
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white text-2xl font-bold">1</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Browse & Select</h3>
-              <p className="text-gray-600">
-                Explore our vast collection of designer clothes, lehengas, and accessories. Filter by size, color, and occasion.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white text-2xl font-bold">2</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Book & Pay</h3>
-              <p className="text-gray-600">
-                Choose your rental dates and make a secure payment. We'll handle the delivery right to your doorstep.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-white text-2xl font-bold">3</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Wear & Return</h3>
-              <p className="text-gray-600">
-                Enjoy your special day in the perfect outfit. Return it hassle-free after your event.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      </motion.section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-16 bg-white"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose RentElegance?
+              Why Choose Rent the moment?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We make fashion accessible and sustainable
+              Experience the future of fashion with our premium rental service
             </p>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-pink-600" />
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            <motion.div variants={itemVariants} className="text-center">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verified Items</h3>
-              <p className="text-gray-600 text-sm">
-                All items are quality-checked and verified before listing
-              </p>
-            </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
+              <p className="text-gray-600">Handpicked designer pieces from top brands</p>
+            </motion.div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Truck className="w-6 h-6 text-purple-600" />
+            <motion.div variants={itemVariants} className="text-center">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Free Delivery</h3>
-              <p className="text-gray-600 text-sm">
-                Free pickup and delivery across major cities in India
-              </p>
-            </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Safe & Secure</h3>
+              <p className="text-gray-600">Professional cleaning and quality assurance</p>
+            </motion.div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-green-600" />
+            <motion.div variants={itemVariants} className="text-center">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Truck className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Premium Quality</h3>
-              <p className="text-gray-600 text-sm">
-                Designer clothes from top brands and boutiques
-              </p>
-            </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+              <p className="text-gray-600">Quick delivery and pickup service</p>
+            </motion.div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-blue-600" />
+            <motion.div variants={itemVariants} className="text-center">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Trusted Community</h3>
-              <p className="text-gray-600 text-sm">
-                Join thousands of satisfied customers across India
-              </p>
-            </div>
-          </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">24/7 Support</h3>
+              <p className="text-gray-600">Round-the-clock customer service</p>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-pink-500 to-purple-600">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-16 bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Rent Your Perfect Outfit?
-          </h2>
-          <p className="text-xl text-pink-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of customers who trust RentElegance for their special occasions
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-bold mb-4"
+          >
+            Ready to Rent Your Dream Outfit?
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            viewport={{ once: true }}
+            className="text-xl mb-8 max-w-2xl mx-auto"
+          >
+            Join thousands of satisfied customers who trust Rent the moment for their special occasions
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
             <Link
-              href="/categories"
-              className="bg-white text-pink-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-100 transition-all duration-200"
+              href="/products"
+              className="bg-white text-pink-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200"
             >
               Start Shopping
             </Link>
             <Link
-              href="/list-item"
-              className="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white hover:text-pink-600 transition-all duration-200"
+              href="/how-it-works"
+              className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-pink-600 transition-all duration-200"
             >
-              List Your Item
+              Learn How It Works
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }

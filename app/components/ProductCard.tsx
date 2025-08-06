@@ -7,7 +7,7 @@ import { Heart, Star, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../types';
 import { formatPrice, getDiscountPercentage, getConditionColor } from '../utils';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext';
 import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
 
 interface ProductCardProps {
@@ -16,18 +16,25 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { addToWishlist, removeFromWishlist, wishlistItems, cartItems } = useCart();
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart, getCartItem, getCartItemCount } = useCart();
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
   
-  const isInWishlist = wishlistItems.some(item => item.id === product.id);
-  const isInCart = cartItems.some(item => item.product.id === product.id);
+  const cartItem = getCartItem(product._id);
+  const isInCart = !!cartItem;
+
+  // Check if product is in wishlist on mount
+  useEffect(() => {
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    setIsWishlisted(wishlist.some((item: any) => item._id === product._id));
+  }, [product._id]);
 
   // Auto-slide functionality with Framer Motion
   useEffect(() => {
     if (product.images.length > 1) {
       const interval = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-      }, 3000);
+      }, 6000);
 
       return () => clearInterval(interval);
     }
@@ -61,6 +68,26 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     setTouchStart(0);
     setTouchEnd(0);
+  };
+
+  const handleAddToCart = () => {
+    addToCart(product, 1, product.rentalDuration);
+  };
+
+  const handleWishlistToggle = () => {
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    
+    if (isWishlisted) {
+      // Remove from wishlist
+      const updatedWishlist = wishlist.filter((item: any) => item._id !== product._id);
+      localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+      setIsWishlisted(false);
+    } else {
+      // Add to wishlist
+      const updatedWishlist = [...wishlist, product];
+      localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+      setIsWishlisted(true);
+    }
   };
 
   return (
@@ -104,6 +131,20 @@ export default function ProductCard({ product }: ProductCardProps) {
           </motion.div>
         </AnimatePresence>
         
+        {/* Wishlist Button */}
+        <button
+          onClick={handleWishlistToggle}
+          className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/wishlist"
+        >
+          <Heart 
+            className={`w-5 h-5 transition-all duration-200 ${
+              isWishlisted 
+                ? 'fill-red-500 text-red-500' 
+                : 'text-gray-600 group-hover/wishlist:text-red-500'
+            }`}
+          />
+        </button>
+        
         {/* Discount Badge */}
         {discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
@@ -111,17 +152,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
         
-        {/* Wishlist Button */}
-        <button 
-          onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
-          className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
-            isInWishlist 
-              ? 'bg-pink-500 text-white' 
-              : 'bg-white/80 backdrop-blur-sm hover:bg-white text-gray-600'
-          }`}
-        >
-          <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
-        </button>
+        {/* Featured Badge */}
+        {product.isFeatured && (
+          <div className="absolute top-12 left-3 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            Featured
+          </div>
+        )}
         
         {/* Image Navigation Dots */}
         {product.images.length > 1 && (
@@ -148,27 +184,20 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="p-4">
-        {/* Owner Info */}
+        {/* Category */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {product.owner.name.charAt(0)}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-current" />
-              <span className="text-xs text-gray-600">{product.owner.rating}</span>
-            </div>
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {product.category.name}
+            </span>
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-500">
-            <MapPin className="w-3 h-3" />
-            <span>{product.owner.location.split(',')[0]}</span>
+            <span>{product.views} views</span>
           </div>
         </div>
 
         {/* Product Name */}
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/product/${product.slug}`}>
           <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 transition-colors line-clamp-2">
             {product.name}
           </h3>
@@ -181,7 +210,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-xs text-gray-500">•</span>
             <span className="text-xs text-gray-500">{product.color}</span>
           </div>
-          <span className="text-xs text-gray-500">{product.brand}</span>
+          {product.brand && (
+            <span className="text-xs text-gray-500">{product.brand}</span>
+          )}
         </div>
 
         {/* Price */}
@@ -198,16 +229,18 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          {product.tags.slice(0, 2).map((tag, index) => (
-            <span
-              key={index}
-              className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        {product.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {product.tags.slice(0, 2).map((tag, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex space-x-2">
@@ -216,26 +249,31 @@ export default function ProductCard({ product }: ProductCardProps) {
               href="/cart"
               className="flex-1 bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
             >
-              Go to Cart
+              Go to Cart ({cartItem?.quantity})
             </Link>
           ) : (
-            <Link
-              href={`/product/${product.id}`}
-              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 text-center"
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.isAvailable}
+              className={`flex-1 text-sm font-medium py-2 px-4 rounded-lg transition-all duration-200 text-center ${
+                product.isAvailable
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
-              View Details
-            </Link>
+              {product.isAvailable ? 'Add to Cart' : 'Not Available'}
+            </button>
           )}
-          <button
-            onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              isInWishlist 
-                ? 'bg-pink-100 text-pink-600 hover:bg-pink-200' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+          <Link
+            href={`/product/${product.slug}`}
+            className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200"
           >
-            <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
-          </button>
+            <span className="sr-only">View Details</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </Link>
         </div>
       </div>
     </motion.div>

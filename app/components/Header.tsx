@@ -1,27 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingBag, User, Menu, X, Heart } from 'lucide-react';
+import Image from 'next/image';
+import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const { getCartItemCount, getWishlistCount } = useCart();
+  const { getCartItemCount } = useCart();
+  const { user, logout } = useAuth();
 
   const cartItemCount = getCartItemCount();
-  const wishlistCount = getWishlistCount();
-  const hasItems = cartItemCount > 0 || wishlistCount > 0;
+  const hasItems = cartItemCount > 0;
 
   // Handle scroll to hide/show header
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // If there are items in cart/wishlist, always show header
+      // If there are items in cart, always show header
       if (hasItems) {
         setIsVisible(true);
         return;
@@ -57,18 +59,31 @@ export default function Header() {
     }
   }, [isMenuOpen]);
 
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className={`bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
     } ${hasItems ? 'shadow-lg' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-20 h-20 relative">
+              <Image
+                src="/logo.png"
+                alt="Rent the moment"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="text-xl font-bold text-gray-900">RentElegance</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
+              Rent the moment
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -103,15 +118,6 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <Heart className="w-5 h-5" />
-              {wishlistCount > 0 && (
-                <motion.span 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  {wishlistCount}
-                </motion.span>
-              )}
             </Link>
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
@@ -125,31 +131,35 @@ export default function Header() {
                 </motion.span>
               )}
             </Link>
-            <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
-              <User className="w-5 h-5" />
-            </button>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-700">Hi, {user.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-gray-700 hover:text-red-600 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+              >
+                Login
+              </Link>
+            )}
             <Link
               href="/list-item"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+              className="bg-white text-pink-600 border border-pink-600 px-4 py-2 rounded-lg hover:bg-pink-600 hover:text-white transition-all duration-200 font-medium"
             >
               List Item
             </Link>
           </div>
 
-          {/* Mobile Cart and Wishlist Icons */}
+          {/* Mobile Cart Icon */}
           <div className="md:hidden flex items-center space-x-2">
-            <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
-              <Heart className="w-5 h-5" />
-              {wishlistCount > 0 && (
-                <motion.span 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  {wishlistCount}
-                </motion.span>
-              )}
-            </Link>
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
               {cartItemCount > 0 && (
@@ -198,11 +208,6 @@ export default function Header() {
               <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
                 <Link href="/wishlist" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
                   <Heart className="w-5 h-5" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
                 </Link>
                 <Link href="/cart" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
                   <ShoppingBag className="w-5 h-5" />
@@ -212,13 +217,30 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
-                <button className="p-2 text-gray-700 hover:text-pink-600 transition-colors">
-                  <User className="w-5 h-5" />
-                </button>
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">Hi, {user.name}</span>
+                    <button
+                      onClick={handleLogout}
+                      className="p-2 text-gray-700 hover:text-red-600 transition-colors"
+                      title="Logout"
+                    >
+                      <LogOut className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+                  >
+                    Login
+                  </Link>
+                )}
                 <Link
                   href="/list-item"
                   onClick={() => setIsMenuOpen(false)}
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+                  className="bg-white text-pink-600 border border-pink-600 px-4 py-2 rounded-lg hover:bg-pink-600 hover:text-white transition-all duration-200 font-medium"
                 >
                   List Item
                 </Link>
