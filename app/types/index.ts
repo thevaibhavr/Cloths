@@ -17,7 +17,8 @@ export interface PaginatedResponse<T> {
 
 // User Types
 export interface User {
-  _id: string;
+  _id?: string;
+  id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -31,8 +32,8 @@ export interface User {
   };
   isActive: boolean;
   emailVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Category Types
@@ -79,6 +80,7 @@ export interface OrderItem {
   quantity: number;
   rentalDuration: number;
   price: number;
+  totalPrice: number;
 }
 
 export interface Order {
@@ -87,6 +89,9 @@ export interface Order {
   user: User;
   items: OrderItem[];
   totalAmount: number;
+  subtotal: number;
+  shippingCost: number;
+  tax: number;
   shippingAddress: {
     street: string;
     city: string;
@@ -97,7 +102,10 @@ export interface Order {
   orderStatus: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Returned' | 'Cancelled';
   paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
   paymentMethod: string;
+  rentalStartDate: string;
+  rentalEndDate: string;
   adminNotes?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -158,6 +166,9 @@ export interface CreateOrderData {
     country: string;
   };
   paymentMethod: string;
+  rentalStartDate: string;
+  rentalEndDate: string;
+  notes?: string;
 }
 
 export interface UpdateProfileData {

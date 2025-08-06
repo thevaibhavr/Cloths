@@ -9,6 +9,7 @@ import { Product } from '../types';
 import { formatPrice, getDiscountPercentage, getConditionColor } from '../utils';
 import { useCart } from '../contexts/CartContext';
 import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
+import RentModal from './RentModal';
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,11 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [showRentModal, setShowRentModal] = useState(false);
+  const [rentalDates, setRentalDates] = useState({
+    startDate: '',
+    endDate: ''
+  });
   const { addToCart, getCartItem, getCartItemCount } = useCart();
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
   
@@ -72,6 +78,18 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = () => {
     addToCart(product, 1, product.rentalDuration);
+  };
+
+  const handleRentNow = () => {
+    setShowRentModal(true);
+  };
+
+  const handleConfirmRent = () => {
+    if (rentalDates.startDate && rentalDates.endDate) {
+      addToCart(product, 1, product.rentalDuration, rentalDates);
+      setShowRentModal(false);
+      setRentalDates({ startDate: '', endDate: '' });
+    }
   };
 
   const handleWishlistToggle = () => {
@@ -247,35 +265,58 @@ export default function ProductCard({ product }: ProductCardProps) {
           {isInCart ? (
             <Link
               href="/cart"
-              className="flex-1 bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+              className="flex-1 bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
             >
               Go to Cart ({cartItem?.quantity})
             </Link>
           ) : (
-            <button
-              onClick={handleAddToCart}
-              disabled={!product.isAvailable}
-              className={`flex-1 text-sm font-medium py-2 px-4 rounded-lg transition-all duration-200 text-center ${
-                product.isAvailable
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {product.isAvailable ? 'Add to Cart' : 'Not Available'}
-            </button>
+            <>
+              <button
+                onClick={handleAddToCart}
+                disabled={!product.isAvailable}
+                className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
+                  product.isAvailable
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {product.isAvailable ? 'Add to Cart' : 'Not Available'}
+              </button>
+              <button
+                onClick={handleRentNow}
+                disabled={!product.isAvailable}
+                className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
+                  product.isAvailable
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {product.isAvailable ? 'Rent Now' : 'Not Available'}
+              </button>
+            </>
           )}
           <Link
             href={`/product/${product.slug}`}
-            className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200"
+            className="w-12 h-12 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center"
           >
             <span className="sr-only">View Details</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
           </Link>
         </div>
       </div>
+
+      {/* Rent Modal */}
+      <RentModal
+        isOpen={showRentModal}
+        onClose={() => setShowRentModal(false)}
+        product={product}
+        rentalDates={rentalDates}
+        onRentalDatesChange={setRentalDates}
+        onConfirmRent={handleConfirmRent}
+      />
     </motion.div>
   );
 } 

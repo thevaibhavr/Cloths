@@ -9,8 +9,12 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { formatPrice } from '../utils';
 import { User } from '../types';
+import { apiService } from '../services/api';
+import { useRouter } from 'next/navigation';
 
 interface Address {
+  name: string;
+  phone: string;
   street: string;
   city: string;
   state: string;
@@ -19,20 +23,29 @@ interface Address {
 }
 
 export default function CheckoutPage() {
-  const { cart, getCartTotal } = useCart();
-  const { user } = useAuth();
+  const { cart, getCartTotal, clearCart } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState<Address>({
+    name: '',
+    phone: '',
     street: '',
     city: '',
     state: '',
     zipCode: '',
-    country: 'India'
+    country: 'India' 
   });
-  const [loading, setLoading] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
 
   useEffect(() => {
+    // Wait for auth loading to complete
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
       window.location.href = '/login';
       return;
@@ -45,21 +58,27 @@ export default function CheckoutPage() {
 
     // Set user's existing address as default if available
     if (user.address) {
-      setSelectedAddress(user.address);
+      setSelectedAddress({
+        name: user.name,
+        phone: user.phone || '',
+        ...user.address
+      });
     }
-  }, [user, cart.items.length]);
+  }, [user, authLoading, cart.items.length]);
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSelectedAddress(newAddress);
     setShowAddressForm(false);
-    setNewAddress({
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'India'
-    });
+            setNewAddress({
+          name: '',
+          phone: '',
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'India'
+        });
   };
 
   const handlePlaceOrder = async () => {
@@ -68,22 +87,57 @@ export default function CheckoutPage() {
       return;
     }
 
-    setLoading(true);
+    setOrderLoading(true);
     try {
-      // Here you would typically make an API call to create the order
-      console.log('Placing order with address:', selectedAddress);
-      console.log('Cart items:', cart.items);
+      // Prepare order data
+      const orderData = {
+        items: cart.items.map(item => ({
+          product: item.product._id,
+          quantity: item.quantity,
+          rentalDuration: item.rentalDuration
+        })),
+        shippingAddress: {
+          name: selectedAddress.name,
+          phone: selectedAddress.phone,
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          zipCode: selectedAddress.zipCode,
+          country: selectedAddress.country
+        },
+        paymentMethod: paymentMethod,
+        rentalStartDate: cart.items[0]?.rentalDates?.startDate || new Date().toISOString(),
+        rentalEndDate: cart.items[0]?.rentalDates?.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        notes: ''
+      };
+
+      // Create order
+      const order = await apiService.createOrder(orderData);
       
-      // For now, just show a success message
-      alert('Order placed successfully!');
-      // Redirect to orders page or show success page
+      // Clear cart after successful order
+      clearCart();
+      
+      // Redirect to orders page
+      router.push('/orders');
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Failed to place order. Please try again.');
     } finally {
-      setLoading(false);
+      setOrderLoading(false);
     }
   };
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null; // Will redirect to login
@@ -142,18 +196,20 @@ export default function CheckoutPage() {
 
               {selectedAddress ? (
                 <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{selectedAddress.street}</p>
-                        <p className="text-gray-600">
-                          {selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipCode}
-                        </p>
-                        <p className="text-gray-600">{selectedAddress.country}</p>
-                      </div>
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0 ml-2" />
+                                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{selectedAddress.name}</p>
+                      <p className="text-gray-600">{selectedAddress.phone}</p>
+                      <p className="font-medium text-gray-900">{selectedAddress.street}</p>
+                      <p className="text-gray-600">
+                        {selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipCode}
+                      </p>
+                      <p className="text-gray-600">{selectedAddress.country}</p>
                     </div>
+                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 ml-2" />
                   </div>
+                </div>
                   <button
                     onClick={() => setShowAddressForm(true)}
                     className="text-pink-600 hover:text-pink-700 text-sm font-medium"
@@ -183,6 +239,34 @@ export default function CheckoutPage() {
                   className="mt-4 border-t border-gray-200 pt-4"
                 >
                   <form onSubmit={handleAddressSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newAddress.name}
+                          onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={newAddress.phone}
+                          onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                          placeholder="Enter your phone number"
+                        />
+                      </div>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Street Address
@@ -272,11 +356,36 @@ export default function CheckoutPage() {
               )}
             </motion.div>
 
-            {/* Order Items */}
+            {/* Payment Method */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
+            >
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h2>
+              <div className="space-y-3">
+                {['Cash on Delivery', 'Credit Card', 'Debit Card', 'PayPal'].map((method) => (
+                  <label key={method} className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method}
+                      checked={paymentMethod === method}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-500"
+                    />
+                    <span className="text-gray-900">{method}</span>
+                  </label>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Order Items */}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
             >
               <h2 className="text-lg font-medium text-gray-900 mb-4">Order Items</h2>
@@ -351,10 +460,10 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handlePlaceOrder}
-                disabled={loading || !selectedAddress}
+                disabled={orderLoading || !selectedAddress}
                 className="w-full mt-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Placing Order...' : 'Place Order'}
+                {orderLoading ? 'Placing Order...' : 'Place Order'}
               </button>
 
               {!selectedAddress && (

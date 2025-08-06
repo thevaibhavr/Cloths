@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, Heart, LogOut, Package } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -131,6 +131,11 @@ export default function Header() {
                 </motion.span>
               )}
             </Link>
+            {user && (
+              <Link href="/orders" className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+                <Package className="w-5 h-5" />
+              </Link>
+            )}
             {user ? (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-700">Hi, {user.name}</span>
@@ -217,6 +222,11 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
+                {user && (
+                  <Link href="/orders" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors">
+                    <Package className="w-5 h-5" />
+                  </Link>
+                )}
                 {user ? (
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-700">Hi, {user.name}</span>

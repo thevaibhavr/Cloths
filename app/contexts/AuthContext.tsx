@@ -27,9 +27,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('user_token');
+      const storedUserData = localStorage.getItem('user_data');
+      
       if (token) {
-        const userData = await apiService.getCurrentUser();
-        setUser(userData);
+        try {
+          const userData = await apiService.getCurrentUser();
+          // Normalize user data to use _id
+          const normalizedUser = {
+            ...userData,
+            _id: userData._id || userData.id
+          };
+          setUser(normalizedUser);
+        } catch (apiError) {
+          console.error('API call failed, using stored user data:', apiError);
+          // Fallback to stored user data if API call fails
+          if (storedUserData) {
+            const parsedUser = JSON.parse(storedUserData);
+            setUser(parsedUser);
+          }
+        }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -44,11 +60,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response: AuthResponse = await apiService.login(credentials);
       
+      // Normalize user data to use _id
+      const normalizedUser = {
+        ...response.user,
+        _id: response.user._id || response.user.id
+      };
+      
       // Store token and user data
       localStorage.setItem('user_token', response.token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      localStorage.setItem('user_data', JSON.stringify(normalizedUser));
       
-      setUser(response.user);
+      setUser(normalizedUser);
       toast.success('Login successful!');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -61,11 +83,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response: AuthResponse = await apiService.register(data);
       
+      // Normalize user data to use _id
+      const normalizedUser = {
+        ...response.user,
+        _id: response.user._id || response.user.id
+      };
+      
       // Store token and user data
       localStorage.setItem('user_token', response.token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      localStorage.setItem('user_data', JSON.stringify(normalizedUser));
       
-      setUser(response.user);
+      setUser(normalizedUser);
       toast.success('Registration successful!');
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -82,8 +110,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem('user_data', JSON.stringify(updatedUser));
+    // Normalize user data to use _id
+    const normalizedUser = {
+      ...updatedUser,
+      _id: updatedUser._id || updatedUser.id
+    };
+    setUser(normalizedUser);
+    localStorage.setItem('user_data', JSON.stringify(normalizedUser));
   };
 
   const value: AuthContextType = {
