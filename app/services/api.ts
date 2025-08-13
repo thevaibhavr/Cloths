@@ -4,7 +4,7 @@ import {
   PaginatedResponse, 
   User, 
   Category, 
-  Product, 
+  Product,     
   Order, 
   LoginCredentials,
   RegisterData,
