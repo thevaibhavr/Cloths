@@ -332,7 +332,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200">
               <div>
                 <span className="text-sm text-gray-600">Sizes</span>
-                <p className="font-medium">{product.sizes.map(s => s.size).join(', ')}</p>
+                <p className="font-medium">{product.sizes.map((s: { size: string }) => s.size).join(', ')}</p>
               </div>
               <div>
                 <span className="text-sm text-gray-600">Color</span>

@@ -171,7 +171,7 @@ export default function CartPage() {
                               </Link>
                             </h3>
                             <p className="text-sm text-gray-500 mb-3">
-                              {item.product.category.name} • Size: {item.product.size} • Color: {item.product.color}
+                              {item.product.category.name} • Sizes: {item.product.sizes.map((s: { size: string }) => s.size).join(', ')} • Color: {item.product.color}
                             </p>
                           </div>
                           <button
