@@ -13,9 +13,10 @@ import RentModal from './RentModal';
 
 interface ProductCardProps {
   product: Product;
+  variant?: 'default' | 'compact';
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, variant = 'default' }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showRentModal, setShowRentModal] = useState(false);
@@ -164,7 +165,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
         
         {/* Discount Badge */}
-        {discountPercentage > 0 && (
+        {product.originalPrice > 0 && discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
             {discountPercentage}% OFF
           </div>
@@ -202,110 +203,158 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="p-4">
-        {/* Category */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-              {product.category.name}
-            </span>
-          </div>
-          <div className="flex items-center space-x-1 text-xs text-gray-500">
-            <span>{product.views} views</span>
-          </div>
-        </div>
+        {variant === 'default' ? (
+          <>
+            {/* Category */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {product.category.name}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 text-xs text-gray-500">
+                <span>{product.views} views</span>
+              </div>
+            </div>
 
-        {/* Product Name */}
-        <Link href={`/product/${product.slug}`}>
-          <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 transition-colors line-clamp-2">
-            {product.name}
-          </h3>
-        </Link>
-
-        {/* Product Details */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-500">Size: {product.size}</span>
-            <span className="text-xs text-gray-500">•</span>
-            <span className="text-xs text-gray-500">{product.color}</span>
-          </div>
-          {product.brand && (
-            <span className="text-xs text-gray-500">{product.brand}</span>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-gray-900">
-              {formatPrice(product.price)}
-            </span>
-            <span className="text-sm text-gray-500 line-through">
-              {formatPrice(product.originalPrice)}
-            </span>
-          </div>
-          <span className="text-xs text-gray-500">for {product.rentalDuration} days</span>
-        </div>
-
-        {/* Tags */}
-        {product.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {product.tags.slice(0, 2).map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex space-x-2">
-          {isInCart ? (
-            <Link
-              href="/cart"
-              className="flex-1 bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
-            >
-              Go to Cart ({cartItem?.quantity})
+            {/* Product Name */}
+            <Link href={`/product/${product.slug}`}>
+              <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 transition-colors line-clamp-2">
+                {product.name}
+              </h3>
             </Link>
-          ) : (
-            <>
-              <button
-                onClick={handleAddToCart}
-                disabled={!product.isAvailable}
-                className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
-                  product.isAvailable
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+
+            {/* Product Details */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500">Sizes: {product.sizes.map(s => s.size).join(', ')}</span>
+                <span className="text-xs text-gray-500">•</span>
+                <span className="text-xs text-gray-500">{product.color}</span>
+              </div>
+              {product.brand && (
+                <span className="text-xs text-gray-500">{product.brand}</span>
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-gray-900">
+                  {formatPrice(product.price)}
+                </span>
+                {product.originalPrice > 0 && (
+                  <span className="text-sm text-gray-500 line-through">
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-gray-500">for {product.rentalDuration} days</span>
+            </div>
+
+            {/* Tags */}
+            {product.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-4">
+                {product.tags.slice(0, 2).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex space-x-2">
+              {isInCart ? (
+                <Link
+                  href="/cart"
+                  className="flex-1 bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+                >
+                  Go to Cart ({cartItem?.quantity})
+                </Link>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!product.isAvailable}
+                  className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
+                    product.isAvailable
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {product.isAvailable ? 'Add to Cart' : 'Not Available'}
+                </button>
+              )}
+              <Link
+                href={`/product/${product.slug}`}
+                className="w-12 h-12 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center"
               >
-                {product.isAvailable ? 'Add to Cart' : 'Not Available'}
-              </button>
-              <button
-                onClick={handleRentNow}
-                disabled={!product.isAvailable}
-                className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
-                  product.isAvailable
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                <span className="sr-only">View Details</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Compact Version - Product Name */}
+            <Link href={`/product/${product.slug}`}>
+              <h3 className="font-semibold text-gray-900 mb-2 hover:text-pink-600 transition-colors line-clamp-2 text-sm">
+                {product.name}
+              </h3>
+            </Link>
+
+            {/* Compact Version - Price Only */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-bold text-gray-900">
+                {formatPrice(product.price)}
+              </span>
+              {product.originalPrice > 0 && (
+                <span className="text-sm text-gray-500 line-through">
+                  {formatPrice(product.originalPrice)}
+                </span>
+              )}
+            </div>
+
+            {/* Compact Version - Small Add to Cart Button */}
+            <div className="flex space-x-2">
+              {isInCart ? (
+                <Link
+                  href="/cart"
+                  className="flex-1 bg-green-600 text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+                >
+                  Cart ({cartItem?.quantity})
+                </Link>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!product.isAvailable}
+                  className={`flex-1 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200 text-center ${
+                    product.isAvailable
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {product.isAvailable ? 'Add to Cart' : 'Not Available'}
+                </button>
+              )}
+              <Link
+                href={`/product/${product.slug}`}
+                className="bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
               >
-                {product.isAvailable ? 'Rent Now' : 'Not Available'}
-              </button>
-            </>
-          )}
-          <Link
-            href={`/product/${product.slug}`}
-            className="w-12 h-12 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center"
-          >
-            <span className="sr-only">View Details</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </Link>
-        </div>
+                <span className="sr-only">View Details</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </Link>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Rent Modal */}

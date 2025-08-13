@@ -49,6 +49,13 @@ export interface Category {
   updatedAt: string;
 }
 
+// Product Size Types
+export interface ProductSize {
+  size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'Free Size';
+  isAvailable: boolean;
+  quantity: number;
+}
+
 // Product Types
 export interface Product {
   _id: string;
@@ -57,7 +64,7 @@ export interface Product {
   category: Category;
   price: number;
   originalPrice: number;
-  size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'Free Size';
+  sizes: ProductSize[];
   color: string;
   rentalDuration: number;
   condition: 'Excellent' | 'Very Good' | 'Good' | 'Fair';

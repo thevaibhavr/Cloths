@@ -38,7 +38,9 @@ export default function ProductsPage() {
         getCategories()
       ]);
       
-      setProducts(productsData.products || []);
+      // Shuffle products for random order
+      const shuffledProducts = [...(productsData.products || [])].sort(() => Math.random() - 0.5);
+      setProducts(shuffledProducts);
       setTotalPages(productsData.totalPages);
       setCategories(categoriesData);
     } catch (error) {
@@ -130,33 +132,35 @@ export default function ProductsPage() {
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
       >
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search for dresses, lehengas, shoes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          {/* Search and Filters Row */}
+          <div className="flex items-center gap-2">
+            {/* Search Bar */}
+            <div className="flex-1">
+              <form onSubmit={handleSearch}>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-900 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search for dresses, lehengas, shoes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 placeholder-gray-500 text-sm"
+                  />
+                </div>
+              </form>
             </div>
-          </form>
 
-          {/* Filters and Controls */}
-          <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between">
-            {/* Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Filter and Sort Controls */}
+            <div className="flex items-center space-x-2">
               {/* Filter Toggle */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 bg-white"
+                className="flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-900 bg-white text-sm"
               >
                 <Filter className="w-4 h-4" />
                 <span className="font-medium">Filters</span>
@@ -168,7 +172,7 @@ export default function ProductsPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4"
+                    className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2"
                   >
                     {/* Category Filter */}
                     <motion.select
@@ -177,7 +181,7 @@ export default function ProductsPage() {
                       transition={{ delay: 0.1 }}
                       value={selectedCategory}
                       onChange={(e) => handleCategoryChange(e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
                     >
                       <option value="">All Categories</option>
                       {categories.map((category) => (
@@ -198,10 +202,10 @@ export default function ProductsPage() {
                         setSortBy(sort);
                         setSortOrder(order);
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
                     >
-                      <option value="createdAt-desc">Newest First</option>
-                      <option value="createdAt-asc">Oldest First</option>
+                      <option value="createdAt-desc">Newest</option>
+                      <option value="createdAt-asc">Oldest</option>
                       <option value="price-asc">Price: Low to High</option>
                       <option value="price-desc">Price: High to Low</option>
                       <option value="name-asc">Name: A to Z</option>
@@ -218,15 +222,15 @@ export default function ProductsPage() {
                   animate={{ opacity: 1 }}
                   whileHover={{ scale: 1.05 }}
                   onClick={clearFilters}
-                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
+                  className="text-xs text-pink-600 hover:text-pink-700 font-medium"
                 >
-                  Clear all
+                  Clear
                 </motion.button>
               )}
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -305,7 +309,7 @@ export default function ProductsPage() {
               layout
               className={`grid gap-6 ${
                 viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' 
                   : 'grid-cols-1'
               }`}
             >

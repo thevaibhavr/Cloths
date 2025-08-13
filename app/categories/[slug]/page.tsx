@@ -53,7 +53,10 @@ export default function CategoryDetailPage() {
       if (!category?._id) return;
       
       const productsData = await getProductsByCategory(category._id, currentPage, 12);
-      setProducts(productsData.products || []);
+      
+      // Shuffle products for random order
+      const shuffledProducts = [...(productsData.products || [])].sort(() => Math.random() - 0.5);
+      setProducts(shuffledProducts);
       setTotalPages(productsData.totalPages);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -111,56 +114,48 @@ export default function CategoryDetailPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Category Header Section */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="flex items-center mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center">
             <Link
               href="/categories"
-              className="flex items-center text-gray-600 hover:text-pink-600 transition-colors"
+              className="flex items-center text-gray-600 hover:text-pink-600 transition-colors text-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Categories
             </Link>
           </div>
-          
-          {/* Category Info */}
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              {category.name}
-            </h1>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
-              {category.description}
-            </p>
-          </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder={`Search in ${category.name}...`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          {/* Search and Filters Row */}
+          <div className="flex items-center gap-2">
+            {/* Search Bar */}
+            <div className="flex-1">
+              <form onSubmit={handleSearch}>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-900 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder={`Search in ${category.name}...`}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+              </form>
             </div>
-          </form>
 
-          {/* Filters and Controls */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Filter Toggle */}
-            <div className="flex items-center space-x-4">
+            {/* Filter and Sort Controls */}
+            <div className="flex items-center space-x-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-900"
               >
                 <Filter className="w-4 h-4" />
-                <span>Filters</span>
+                <span>Sort</span>
               </button>
 
               {/* Sort Options */}
@@ -171,10 +166,10 @@ export default function CategoryDetailPage() {
                     const [sort, order] = e.target.value.split('-');
                     handleSortChange(sort, order);
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm text-gray-900"
                 >
-                  <option value="createdAt-desc">Newest First</option>
-                  <option value="createdAt-asc">Oldest First</option>
+                  <option value="createdAt-desc">Newest</option>
+                  <option value="createdAt-asc">Oldest</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
                   <option value="name-asc">Name: A to Z</option>
@@ -186,14 +181,12 @@ export default function CategoryDetailPage() {
               {(searchTerm || sortBy !== 'createdAt' || sortOrder !== 'desc') && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
+                  className="text-xs text-pink-600 hover:text-pink-700 font-medium"
                 >
-                  Clear all
+                  Clear
                 </button>
               )}
             </div>
-
-          
           </div>
         </div>
       </div>
@@ -221,9 +214,9 @@ export default function CategoryDetailPage() {
 
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard key={product._id} product={product} variant="compact" />
               ))}
             </div>
 
