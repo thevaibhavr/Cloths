@@ -270,7 +270,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               {isInCart ? (
                 <Link
                   href="/cart"
-                  className="flex-1 bg-green-600 text-white text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center shadow-lg"
+                  className="w-1/2 bg-green-600 text-white text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center shadow-lg"
                 >
                   Go to Cart ({cartItem?.quantity})
                 </Link>
@@ -278,7 +278,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.isAvailable}
-                  className={`flex-1 text-sm font-bold py-3 px-4 rounded-lg transition-all duration-200 text-center shadow-lg ${
+                  className={`w-1/2 text-sm font-bold py-3 px-4 rounded-lg transition-all duration-200 text-center shadow-lg ${
                     product.isAvailable
                       ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:shadow-xl transform hover:-translate-y-1'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -289,7 +289,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               )}
               <Link
                 href={`/product/${product.slug}`}
-                className="w-12 h-12 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg"
+                className="w-1/2 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg"
               >
                 <span className="sr-only">View Details</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +325,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               {isInCart ? (
                 <Link
                   href="/cart"
-                  className="flex-1 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+                  className="w-1/2 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
                 >
                   Cart ({cartItem?.quantity})
                 </Link>
@@ -333,7 +333,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.isAvailable}
-                  className={`flex-1 text-xs font-bold py-2 px-3 rounded-lg transition-all duration-200 text-center ${
+                  className={`w-1/2 text-xs font-bold py-2 px-3 rounded-lg transition-all duration-200 text-center ${
                     product.isAvailable
                       ? 'bg-yellow-400 text-black hover:bg-yellow-500'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -344,7 +344,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               )}
               <Link
                 href={`/product/${product.slug}`}
-                className="bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
+                className="w-1/2 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
               >
                 <span className="sr-only">View Details</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
