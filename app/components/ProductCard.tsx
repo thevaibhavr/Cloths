@@ -111,11 +111,11 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
 
   return (
     <motion.div 
-      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+      className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 group"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileHover={{ y: -8, transition: { duration: 0.2 } }}
     >
       {/* Image Container */}
       <div 
@@ -138,7 +138,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 src={product.images[currentImageIndex]}
                 alt={product.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
                 onError={(e) => handleImageError(e)}
                 unoptimized={isExternalImage(product.images[currentImageIndex])}
               />
@@ -153,7 +153,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
         {/* Wishlist Button */}
         <button
           onClick={handleWishlistToggle}
-          className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/wishlist"
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/wishlist shadow-lg"
         >
           <Heart 
             className={`w-5 h-5 transition-all duration-200 ${
@@ -166,14 +166,14 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
         
         {/* Discount Badge */}
         {product.originalPrice > 0 && discountPercentage > 0 && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+          <div className="absolute top-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             {discountPercentage}% OFF
           </div>
         )}
         
         {/* Featured Badge */}
         {product.isFeatured && (
-          <div className="absolute top-12 left-3 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+          <div className="absolute top-12 left-3 bg-black text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             Featured
           </div>
         )}
@@ -186,7 +186,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  index === currentImageIndex ? 'bg-yellow-400' : 'bg-white/70'
                 }`}
               />
             ))}
@@ -195,20 +195,20 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
         
         {/* Condition Badge */}
         <div className="absolute bottom-3 left-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionColor(product.condition)}`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getConditionColor(product.condition)}`}>
             {product.condition}
           </span>
         </div>
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-5">
         {variant === 'default' ? (
           <>
             {/* Category */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                <span className="text-xs text-gray-600 bg-yellow-100 px-3 py-1 rounded-full font-medium">
                   {product.category.name}
                 </span>
               </div>
@@ -219,27 +219,27 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
 
             {/* Product Name */}
             <Link href={`/product/${product.slug}`}>
-              <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 transition-colors line-clamp-2">
+              <h3 className="font-bold text-black mb-2 hover:text-yellow-600 transition-colors line-clamp-2 text-lg">
                 {product.name}
               </h3>
             </Link>
 
             {/* Product Details */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">Sizes: {product.sizes.map((s: { size: string }) => s.size).join(', ')}</span>
+                <span className="text-xs text-gray-600">Sizes: {product.sizes.map((s: { size: string }) => s.size).join(', ')}</span>
                 <span className="text-xs text-gray-500">•</span>
-                <span className="text-xs text-gray-500">{product.color}</span>
+                <span className="text-xs text-gray-600">{product.color}</span>
               </div>
               {product.brand && (
-                <span className="text-xs text-gray-500">{product.brand}</span>
+                <span className="text-xs text-gray-600 font-medium">{product.brand}</span>
               )}
             </div>
 
             {/* Price */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <span className="text-xl font-bold text-black">
                   {formatPrice(product.price)}
                 </span>
                 {product.originalPrice > 0 && (
@@ -248,16 +248,16 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-500">for {product.rentalDuration} days</span>
+              <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">for {product.rentalDuration} days</span>
             </div>
 
             {/* Tags */}
             {product.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-4">
+              <div className="flex flex-wrap gap-2 mb-5">
                 {product.tags.slice(0, 2).map((tag, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                    className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium"
                   >
                     {tag}
                   </span>
@@ -266,11 +266,11 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
             )}
 
             {/* Action Buttons */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               {isInCart ? (
                 <Link
                   href="/cart"
-                  className="flex-1 bg-green-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+                  className="flex-1 bg-green-600 text-white text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center shadow-lg"
                 >
                   Go to Cart ({cartItem?.quantity})
                 </Link>
@@ -278,9 +278,9 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.isAvailable}
-                  className={`flex-1 text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200 text-center ${
+                  className={`flex-1 text-sm font-bold py-3 px-4 rounded-lg transition-all duration-200 text-center shadow-lg ${
                     product.isAvailable
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                      ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:shadow-xl transform hover:-translate-y-1'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -289,7 +289,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               )}
               <Link
                 href={`/product/${product.slug}`}
-                className="w-12 h-12 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center"
+                className="w-12 h-12 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg"
               >
                 <span className="sr-only">View Details</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,14 +303,14 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
           <>
             {/* Compact Version - Product Name */}
             <Link href={`/product/${product.slug}`}>
-              <h3 className="font-semibold text-gray-900 mb-2 hover:text-pink-600 transition-colors line-clamp-2 text-sm">
+              <h3 className="font-bold text-black mb-3 hover:text-yellow-600 transition-colors line-clamp-2 text-sm">
                 {product.name}
               </h3>
             </Link>
 
             {/* Compact Version - Price Only */}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-lg font-bold text-black">
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice > 0 && (
@@ -325,7 +325,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               {isInCart ? (
                 <Link
                   href="/cart"
-                  className="flex-1 bg-green-600 text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
+                  className="flex-1 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
                 >
                   Cart ({cartItem?.quantity})
                 </Link>
@@ -333,9 +333,9 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.isAvailable}
-                  className={`flex-1 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200 text-center ${
+                  className={`flex-1 text-xs font-bold py-2 px-3 rounded-lg transition-all duration-200 text-center ${
                     product.isAvailable
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                      ? 'bg-yellow-400 text-black hover:bg-yellow-500'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -344,7 +344,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               )}
               <Link
                 href={`/product/${product.slug}`}
-                className="bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
+                className="bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
               >
                 <span className="sr-only">View Details</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

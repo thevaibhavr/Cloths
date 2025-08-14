@@ -9,35 +9,27 @@ import Link from 'next/link';
 const banners = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    title: 'Designer Lehengas',
-    subtitle: 'Stunning bridal and party wear collection',
-    cta: 'Shop Lehengas',
-    link: '/categories/lehengas'
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    title: 'Designer Collection',
+    subtitle: 'Premium fashion for every occasion',
+    cta: 'Shop Now',
+    link: '/products'
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    title: 'Traditional Dresses',
-    subtitle: 'Elegant sarees and ethnic wear',
-    cta: 'Explore Traditional',
-    link: '/categories/traditional-dresses'
+    image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    title: 'Accessories & More',
+    subtitle: 'Complete your perfect look',
+    cta: 'Explore Accessories',
+    link: '/categories/accessories'
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    title: 'Professional Suits',
-    subtitle: 'Corporate and formal wear collection',
-    cta: 'View Suits',
-    link: '/categories/suits'
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    title: 'Fashion Accessories',
-    subtitle: 'Complete your look with our accessories',
-    cta: 'Shop Accessories',
-    link: '/categories/accessories'
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    title: 'Traditional Elegance',
+    subtitle: 'Timeless beauty in every piece',
+    cta: 'View Traditional',
+    link: '/categories/traditional-dresses'
   }
 ];
 
@@ -66,7 +58,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative h-[600px] overflow-hidden bg-gray-900">
+    <section className="relative h-[300px] overflow-hidden bg-black">
       {/* Slides */}
       <AnimatePresence mode="wait">
         {banners.map((banner, index) => (
@@ -90,7 +82,7 @@ export default function HeroSlider() {
                 />
                 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute inset-0 bg-black/50" />
                 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -99,30 +91,10 @@ export default function HeroSlider() {
                       initial={{ y: 50, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3, duration: 0.8 }}
-                      className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+                      className="text-3xl md:text-5xl font-bold leading-tight"
                     >
                       {banner.title}
                     </motion.h1>
-                    <motion.p 
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.5, duration: 0.8 }}
-                      className="text-xl md:text-2xl mb-8 text-gray-200"
-                    >
-                      {banner.subtitle}
-                    </motion.p>
-                    <motion.div
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.7, duration: 0.8 }}
-                    >
-                      <Link
-                        href={banner.link}
-                        className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                      >
-                        {banner.cta}
-                      </Link>
-                    </motion.div>
                   </div>
                 </div>
               </div>
@@ -136,7 +108,7 @@ export default function HeroSlider() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200 z-10"
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/40 backdrop-blur-sm hover:bg-yellow-400 hover:text-black text-white p-3 rounded-full transition-all duration-200 z-10"
       >
         <ChevronLeft className="w-6 h-6" />
       </motion.button>
@@ -145,7 +117,7 @@ export default function HeroSlider() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200 z-10"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/40 backdrop-blur-sm hover:bg-yellow-400 hover:text-black text-white p-3 rounded-full transition-all duration-200 z-10"
       >
         <ChevronRight className="w-6 h-6" />
       </motion.button>
@@ -160,8 +132,8 @@ export default function HeroSlider() {
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-200 ${
               index === currentSlide
-                ? 'bg-white scale-125'
-                : 'bg-white/50 hover:bg-white/75'
+                ? 'bg-yellow-400 scale-125'
+                : 'bg-white/50 hover:bg-yellow-400/75'
             }`}
           />
         ))}
@@ -170,7 +142,7 @@ export default function HeroSlider() {
       {/* Progress Bar */}
       <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
         <motion.div
-          className="h-full bg-gradient-to-r from-pink-500 to-purple-600"
+          className="h-full bg-yellow-400"
           initial={{ width: 0 }}
           animate={{ width: `${((currentSlide + 1) / banners.length) * 100}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}

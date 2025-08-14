@@ -13,12 +13,46 @@
     "image": "/images/categories/traditional-dresses.jpg",
     "productCount": 32
   },
-  
+  {
+    "id": "western-dresses",
+    "name": "Western Dresses",
+    "description": "Cocktail dresses, gowns, and western wear",
+    "image": "/images/categories/western-dresses.jpg",
+    "productCount": 28
+  },
+  {
+    "id": "suits",
+    "name": "Suits & Formal",
+    "description": "Professional suits and formal wear",
+    "image": "/images/categories/suits.jpg",
+    "productCount": 18
+  },
+  {
+    "id": "shoes",
+    "name": "Shoes & Footwear",
+    "description": "Designer heels, flats, and footwear",
+    "image": "/images/categories/shoes.jpg",
+    "productCount": 22
+  },
   {
     "id": "accessories",
     "name": "Accessories",
     "description": "Jewelry, bags, and fashion accessories",
     "image": "/images/categories/accessories.jpg",
     "productCount": 28
+  },
+  {
+    "id": "bridal-collection",
+    "name": "Bridal Collection",
+    "description": "Complete bridal ensembles and sets",
+    "image": "/images/categories/lehengas.jpg",
+    "productCount": 15
+  },
+  {
+    "id": "party-wear",
+    "name": "Party Wear",
+    "description": "Glamorous party and celebration outfits",
+    "image": "/images/categories/western-dresses.jpg",
+    "productCount": 20
   }
 ] 

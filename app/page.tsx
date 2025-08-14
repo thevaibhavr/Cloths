@@ -6,24 +6,30 @@ import HeroSlider from './components/HeroSlider';
 import CategoryCard from './components/CategoryCard';
 import ProductCard from './components/ProductCard';
 import { getCategories, getProducts } from './data/products';
-import { ArrowRight, Star, Users, Shield, Truck } from 'lucide-react';
+import { ArrowRight, Star, ShoppingBag, TrendingUp, Zap, Sparkles, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { Category, Product } from './types';
 
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [lehengaProducts, setLehengaProducts] = useState<Product[]>([]);
+  const [indoWesternProducts, setIndoWesternProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [categoriesData, productsData] = await Promise.all([
+        const [categoriesData, productsData, lehengaData, indoWesternData] = await Promise.all([
           getCategories(),
-          getProducts(1, 12, { featured: true })
+          getProducts(1, 12, { featured: true }),
+          getProducts(1, 5, { category: '6891ea9e4c1849c2df9e1226' }),
+          getProducts(1, 5, { category: '6891ffbe56ab7a0c7cea74eb' })
         ]);
         setCategories(categoriesData);
         setProducts(productsData.products || []);
+        setLehengaProducts(lehengaData.products || []);
+        setIndoWesternProducts(indoWesternData.products || []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -45,7 +51,7 @@ export default function Home() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"
+            className="rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"
           ></motion.div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
@@ -90,36 +96,21 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-16 bg-white"
+        className="py-20 bg-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Browse by Category
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Find the perfect outfit for any occasion from our curated collection of designer clothes
-            </p>
-          </motion.div>
-          
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
           >
             {categories.map((category, index) => (
               <motion.div
                 key={category._id}
                 variants={itemVariants}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
                 <CategoryCard category={category} />
               </motion.div>
@@ -131,14 +122,15 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             viewport={{ once: true }}
-            className="text-center mt-12"
+            className="text-center mt-16"
           >
             <Link
               href="/categories"
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+              className="inline-flex items-center space-x-3 bg-yellow-400 text-black px-8 py-4 rounded-lg hover:bg-yellow-500 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
+              <ShoppingBag className="w-5 h-5" />
               <span>View All Categories</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </div>
@@ -150,7 +142,7 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-16 bg-gray-50"
+        className="py-20 bg-gray-50"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -158,13 +150,13 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Featured Items
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+              Trending Now
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Handpicked designer pieces for your special occasions
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Handpicked designer pieces that are trending this season
             </p>
           </motion.div>
           
@@ -173,13 +165,13 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {featuredProducts.map((product, index) => (
               <motion.div
                 key={product._id}
                 variants={itemVariants}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
                 <ProductCard product={product} />
               </motion.div>
@@ -191,26 +183,27 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             viewport={{ once: true }}
-            className="text-center mt-12"
+            className="text-center mt-16"
           >
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium"
+              className="inline-flex items-center space-x-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
+              <TrendingUp className="w-5 h-5" />
               <span>View All Products</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Features Section */}
+      {/* Lehenga Category Section */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-16 bg-white"
+        className="py-20 bg-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -218,13 +211,13 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Rent the moment?
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+              Bridal Elegance
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Experience the future of fashion with our premium rental service
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Stunning lehengas for your special moments and celebrations
             </p>
           </motion.div>
           
@@ -233,89 +226,160 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
           >
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
-              <p className="text-gray-600">Handpicked designer pieces from top brands</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Safe & Secure</h3>
-              <p className="text-gray-600">Professional cleaning and quality assurance</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Truck className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
-              <p className="text-gray-600">Quick delivery and pickup service</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">24/7 Support</h3>
-              <p className="text-gray-600">Round-the-clock customer service</p>
-            </motion.div>
+            {lehengaProducts.map((product, index) => (
+              <motion.div
+                key={product._id}
+                variants={itemVariants}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            viewport={{ once: true }}
+            className="text-center mt-16"
+          >
+            <Link
+              href="/categories/lehengas"
+              className="inline-flex items-center space-x-3 bg-yellow-400 text-black px-8 py-4 rounded-lg hover:bg-yellow-500 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <Crown className="w-5 h-5" />
+              <span>View All Lehengas</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* CTA Section */}
+      {/* Indo-Western Dress Section */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-16 bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+        className="py-20 bg-gray-50"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2 
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-center mb-16"
           >
-            Ready to Rent Your Dream Outfit?
-          </motion.h2>
-          <motion.p 
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+              Fusion Fashion
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Contemporary indo-western dresses that blend tradition with modern style
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6"
+          >
+            {indoWesternProducts.map((product, index) => (
+              <motion.div
+                key={product._id}
+                variants={itemVariants}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             viewport={{ once: true }}
-            className="text-xl mb-8 max-w-2xl mx-auto"
+            className="text-center mt-16"
           >
-            Join thousands of satisfied customers who trust Rent the moment for their special occasions
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            <Link
+              href="/categories/indo-western-dress"
+              className="inline-flex items-center space-x-3 bg-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>View All Indo-Western</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Shoes Category Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-20 bg-white"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.2 }}
             viewport={{ once: true }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="text-center mb-16"
           >
-            <Link
-              href="/products"
-              className="bg-white text-pink-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200"
-            >
-              Start Shopping
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-pink-600 transition-all duration-200"
-            >
-              Learn How It Works
-            </Link>
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+              Step into Style
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Discover our collection of designer shoes and footwear for every occasion
+            </p>
+          </motion.div>
+          
+          
+          
+        </div>
+      </motion.section>
+
+      {/* Quick Stats Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-16 bg-yellow-400"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center"
+          >
+            <motion.div variants={itemVariants} className="text-black">
+              <div className="text-4xl font-bold mb-2">10K+</div>
+              <div className="text-lg font-medium">Happy Customers</div>
+            </motion.div>
+            <motion.div variants={itemVariants} className="text-black">
+              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-lg font-medium">Designer Pieces</div>
+            </motion.div>
+            <motion.div variants={itemVariants} className="text-black">
+              <div className="text-4xl font-bold mb-2">50+</div>
+              <div className="text-lg font-medium">Brands</div>
+            </motion.div>
+            <motion.div variants={itemVariants} className="text-black">
+              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-lg font-medium">Support</div>
+            </motion.div>
           </motion.div>
         </div>
       </motion.section>

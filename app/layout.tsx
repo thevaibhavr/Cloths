@@ -5,6 +5,9 @@ import Footer from "./components/Footer";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { Toaster } from "react-hot-toast";
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: "Rent the moment - Rent Designer Clothes for Every Occasion",
@@ -24,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50">
+      <body className={`${inter.className} min-h-screen bg-gray-50`}>
         <AuthProvider>
           <CartProvider>
             <Header />
@@ -37,13 +40,13 @@ export default function RootLayout({
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#363636',
+                  background: '#1a1a1a',
                   color: '#fff',
                 },
                 success: {
                   duration: 3000,
                   iconTheme: {
-                    primary: '#10B981',
+                    primary: '#fbbf24',
                     secondary: '#fff',
                   },
                 },
