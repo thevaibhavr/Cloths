@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, Filter, Grid, List, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import { getProducts, getCategories } from '../data/products';
 import { Product, Category } from '../types';
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,17 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Handle URL parameter changes
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl && categories.length > 0) {
+      const category = categories.find(cat => cat.slug === categoryFromUrl);
+      if (category && selectedCategory !== category._id) {
+        setSelectedCategory(category._id);
+      }
+    }
+  }, [searchParams, categories, selectedCategory]);
+
   useEffect(() => {
     loadData();
   }, [currentPage, searchTerm, selectedCategory, sortBy, sortOrder]);
@@ -28,21 +41,23 @@ export default function ProductsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [productsData, categoriesData] = await Promise.all([
-        getProducts(currentPage, 12, {
-          search: searchTerm,
-          category: selectedCategory,
-          sort: sortBy,
-          order: sortOrder
-        }),
-        getCategories()
-      ]);
+      
+      // Load categories first
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+      
+      // Load products with current filters
+      const productsData = await getProducts(currentPage, 12, {
+        search: searchTerm,
+        category: selectedCategory,
+        sort: sortBy,
+        order: sortOrder
+      });
       
       // Shuffle products for random order
       const shuffledProducts = [...(productsData.products || [])].sort(() => Math.random() - 0.5);
       setProducts(shuffledProducts);
       setTotalPages(productsData.totalPages);
-      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -249,7 +264,10 @@ export default function ProductsPage() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-500 mb-4">
-              Try adjusting your search terms or filters
+              {searchParams.get('category') ? 
+                `No products found in category "${searchParams.get('category')}". Try a different category or clear filters.` :
+                'Try adjusting your search terms or filters'
+              }
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -272,6 +290,7 @@ export default function ProductsPage() {
                 Showing {products.length} products
                 {searchTerm && ` for "${searchTerm}"`}
                 {selectedCategory && ` in ${categories.find(c => c._id === selectedCategory)?.name}`}
+                {searchParams.get('category') && !selectedCategory && ` in ${searchParams.get('category')}`}
               </p>
             </motion.div>
 
@@ -351,5 +370,20 @@ export default function ProductsPage() {
         )}
       </motion.div>
     </motion.div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    }>
+      <ProductsPageContent />
+    </Suspense>
   );
 } 
