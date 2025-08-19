@@ -1,27 +1,56 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Search, Filter, Grid, List, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import { getProducts, getCategories } from '../data/products';
 import { Product, Category } from '../types';
+import { ArrowRight, Sparkles } from 'lucide-react';
+
+// Animated Product Card Component
+function AnimatedProductCard({ product, index }: { product: Product; index: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { 
+    once: true, 
+    margin: "-100px 0px -100px 0px",
+    amount: 0.3 
+  });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
+      transition={{ 
+        duration: 0.6, 
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      whileHover={{ 
+        y: -8, 
+        transition: { duration: 0.2 } 
+      }}
+    >
+      <ProductCard product={product} />
+    </motion.div>
+  );
+}
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [randomCategory, setRandomCategory] = useState<Category | null>(null);
 
   // Handle URL parameter changes
   useEffect(() => {
@@ -36,7 +65,7 @@ function ProductsPageContent() {
 
   useEffect(() => {
     loadData();
-  }, [currentPage, searchTerm, selectedCategory, sortBy, sortOrder]);
+  }, [searchTerm, selectedCategory, sortBy, sortOrder]);
 
   const loadData = async () => {
     try {
@@ -46,8 +75,14 @@ function ProductsPageContent() {
       const categoriesData = await getCategories();
       setCategories(categoriesData);
       
-      // Load products with current filters
-      const productsData = await getProducts(currentPage, 12, {
+      // Set random category for the bottom button
+      if (categoriesData.length > 0) {
+        const randomIndex = Math.floor(Math.random() * categoriesData.length);
+        setRandomCategory(categoriesData[randomIndex]);
+      }
+      
+      // Load products with current filters - show 50 products
+      const productsData = await getProducts(1, 50, {
         search: searchTerm,
         category: selectedCategory,
         sort: sortBy,
@@ -57,7 +92,6 @@ function ProductsPageContent() {
       // Shuffle products for random order
       const shuffledProducts = [...(productsData.products || [])].sort(() => Math.random() - 0.5);
       setProducts(shuffledProducts);
-      setTotalPages(productsData.totalPages);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -67,17 +101,14 @@ function ProductsPageContent() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
   };
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    setCurrentPage(1);
   };
 
   const handleSortChange = (sort: string) => {
     setSortBy(sort);
-    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -85,10 +116,9 @@ function ProductsPageContent() {
     setSelectedCategory('');
     setSortBy('createdAt');
     setSortOrder('desc');
-    setCurrentPage(1);
   };
 
-  if (loading && currentPage === 1) {
+  if (loading) {
     return (
       <motion.div 
         initial={{ opacity: 0 }}
@@ -119,6 +149,8 @@ function ProductsPageContent() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true, margin: "-50px" }}
       >
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           {/* Search and Filters Row */}
@@ -255,8 +287,10 @@ function ProductsPageContent() {
       >
         {products.length === 0 ? (
           <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 0.8, opacity: 0, y: 30 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-center py-12"
           >
             <div className="text-gray-400 mb-4">
@@ -282,8 +316,10 @@ function ProductsPageContent() {
           <>
             {/* Products Count */}
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5 }}
               className="mb-6"
             >
               <p className="text-gray-600">
@@ -299,71 +335,38 @@ function ProductsPageContent() {
               layout
               className={`grid gap-6 ${
                 viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' 
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' 
                   : 'grid-cols-1'
               }`}
             >
               <AnimatePresence>
                 {products.map((product, index) => (
-                  <motion.div
-                    key={product._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                    layout
-                  >
-                    <ProductCard product={product} />
-                  </motion.div>
+                  <AnimatedProductCard 
+                    key={product._id} 
+                    product={product} 
+                    index={index} 
+                  />
                 ))}
               </AnimatePresence>
             </motion.div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
+            {/* Random Category Button */}
+            {randomCategory && (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="mt-12 flex justify-center"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="text-center mt-16"
               >
-                <nav className="flex items-center space-x-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </motion.button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <motion.button
-                      key={page}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 border rounded-lg ${
-                        currentPage === page
-                          ? 'bg-pink-600 text-white border-pink-600'
-                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </motion.button>
-                  ))}
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </motion.button>
-                </nav>
+                <Link
+                  href={`/categories/${randomCategory.slug}`}
+                  className="inline-flex items-center space-x-3 bg-black text-white px-5 py-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>View All {randomCategory.name}</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
               </motion.div>
             )}
           </>
