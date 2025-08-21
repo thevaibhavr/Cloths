@@ -598,16 +598,16 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <span>/</span>
                 <Link href="/categories" className="hover:text-gray-900">Categories</Link>
                 <span>/</span>
-                {product.categories && product.categories.length > 0 && product.categories.some(cat => typeof cat === 'object' && cat.name) ? (
+                {product.categories && product.categories.length > 0 && product.categories.some((cat: any) => typeof cat === 'object' && cat.name) ? (
                   <>
                     {product.categories
-                      .filter(cat => typeof cat === 'object' && cat.name)
-                      .map((category, index) => (
+                      .filter((cat: any) => typeof cat === 'object' && cat.name)
+                      .map((category: any, index: number) => (
                         <div key={category._id} className="flex items-center">
                           <Link href={`/categories/${category.slug}`} className="hover:text-gray-900">
                             {category.name}
                           </Link>
-                          {index < product.categories.filter(cat => typeof cat === 'object' && cat.name).length - 1 && <span className="mx-1">,</span>}
+                          {index < product.categories.filter((cat: any) => typeof cat === 'object' && cat.name).length - 1 && <span className="mx-1">,</span>}
                         </div>
                       ))}
                   </>
