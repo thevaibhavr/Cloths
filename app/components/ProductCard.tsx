@@ -205,12 +205,28 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
       <div className="p-5">
         {variant === 'default' ? (
           <>
-            {/* Category */}
+            {/* Categories */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-600 bg-yellow-100 px-3 py-1 rounded-full font-medium">
-                  {product.category.name}
-                </span>
+              <div className="flex items-center space-x-2 flex-wrap">
+                {/* Show multiple categories if available, otherwise show single category */}
+                {product.categories && product.categories.length > 0 && product.categories.some(cat => typeof cat === 'object' && cat.name) ? (
+                  // Show populated categories
+                  product.categories
+                    .filter(cat => typeof cat === 'object' && cat.name)
+                    .map((category, index) => (
+                      <span 
+                        key={category._id} 
+                        className="text-xs text-gray-600 bg-yellow-100 px-3 py-1 rounded-full font-medium"
+                      >
+                        {category.name}
+                      </span>
+                    ))
+                ) : (
+                  // Fallback to single category
+                  <span className="text-xs text-gray-600 bg-yellow-100 px-3 py-1 rounded-full font-medium">
+                    {product.category.name}
+                  </span>
+                )}
               </div>
               <div className="flex items-center space-x-1 text-xs text-gray-500">
                 <span>{product.views} views</span>

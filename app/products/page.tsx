@@ -45,11 +45,9 @@ function ProductsPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = useState(false);
   const [randomCategory, setRandomCategory] = useState<Category | null>(null);
 
   // Handle URL parameter changes
@@ -57,15 +55,16 @@ function ProductsPageContent() {
     const categoryFromUrl = searchParams.get('category');
     if (categoryFromUrl && categories.length > 0) {
       const category = categories.find(cat => cat.slug === categoryFromUrl);
-      if (category && selectedCategory !== category._id) {
-        setSelectedCategory(category._id);
+      if (category) {
+        // Set the category filter for search
+        setSearchTerm(category.name);
       }
     }
-  }, [searchParams, categories, selectedCategory]);
+  }, [searchParams, categories]);
 
   useEffect(() => {
     loadData();
-  }, [searchTerm, selectedCategory, sortBy, sortOrder]);
+  }, [searchTerm, sortBy, sortOrder]);
 
   const loadData = async () => {
     try {
@@ -84,7 +83,6 @@ function ProductsPageContent() {
       // Load products with current filters - show 50 products
       const productsData = await getProducts(1, 50, {
         search: searchTerm,
-        category: selectedCategory,
         sort: sortBy,
         order: sortOrder
       });
@@ -103,17 +101,12 @@ function ProductsPageContent() {
     e.preventDefault();
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-  };
-
   const handleSortChange = (sort: string) => {
     setSortBy(sort);
   };
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedCategory('');
     setSortBy('createdAt');
     setSortOrder('desc');
   };
@@ -171,70 +164,26 @@ function ProductsPageContent() {
               </form>
             </div>
 
-            {/* Filter and Sort Controls */}
+            {/* Sort Controls */}
             <div className="flex items-center space-x-2">
-              {/* Filter Toggle */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-900 bg-white text-sm"
+              {/* Sort Options */}
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [sort, order] = e.target.value.split('-');
+                  setSortBy(sort);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
               >
-                <Filter className="w-4 h-4" />
-                <span className="font-medium">Filters</span>
-              </motion.button>
-
-              <AnimatePresence>
-                {showFilters && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2"
-                  >
-                    {/* Category Filter */}
-                    <motion.select
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                      value={selectedCategory}
-                      onChange={(e) => handleCategoryChange(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
-                    >
-                      <option value="">All Categories</option>
-                      {categories.map((category) => (
-                        <option key={category._id} value={category._id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </motion.select>
-
-                    {/* Sort Options */}
-                    <motion.select
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                      value={`${sortBy}-${sortOrder}`}
-                      onChange={(e) => {
-                        const [sort, order] = e.target.value.split('-');
-                        setSortBy(sort);
-                        setSortOrder(order);
-                      }}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
-                    >
-                      <option value="createdAt-desc">Newest</option>
-                      <option value="createdAt-asc">Oldest</option>
-                      <option value="price-asc">Price: Low to High</option>
-                      <option value="price-desc">Price: High to Low</option>
-                      <option value="name-asc">Name: A to Z</option>
-                      <option value="name-desc">Name: Z to A</option>
-                    </motion.select>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <option value="createdAt-desc">Newest</option>
+                <option value="createdAt-asc">Oldest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
 
               {/* Clear Filters */}
-              {(searchTerm || selectedCategory || sortBy !== 'createdAt' || sortOrder !== 'desc') && (
+              {(searchTerm || sortBy !== 'createdAt' || sortOrder !== 'desc') && (
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -325,8 +274,7 @@ function ProductsPageContent() {
               <p className="text-gray-600">
                 Showing {products.length} products
                 {searchTerm && ` for "${searchTerm}"`}
-                {selectedCategory && ` in ${categories.find(c => c._id === selectedCategory)?.name}`}
-                {searchParams.get('category') && !selectedCategory && ` in ${searchParams.get('category')}`}
+                {searchParams.get('category') && ` in ${searchParams.get('category')}`}
               </p>
             </motion.div>
 

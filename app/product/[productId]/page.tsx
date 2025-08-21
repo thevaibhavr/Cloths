@@ -593,14 +593,29 @@ export default function ProductPage({ params }: ProductPageProps) {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex-1">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 flex-wrap">
                 <Link href="/" className="hover:text-gray-900">Home</Link>
                 <span>/</span>
                 <Link href="/categories" className="hover:text-gray-900">Categories</Link>
                 <span>/</span>
-                <Link href={`/categories/${product.category.slug}`} className="hover:text-gray-900">
-                  {product.category.name}
-                </Link>
+                {product.categories && product.categories.length > 0 && product.categories.some(cat => typeof cat === 'object' && cat.name) ? (
+                  <>
+                    {product.categories
+                      .filter(cat => typeof cat === 'object' && cat.name)
+                      .map((category, index) => (
+                        <div key={category._id} className="flex items-center">
+                          <Link href={`/categories/${category.slug}`} className="hover:text-gray-900">
+                            {category.name}
+                          </Link>
+                          {index < product.categories.filter(cat => typeof cat === 'object' && cat.name).length - 1 && <span className="mx-1">,</span>}
+                        </div>
+                      ))}
+                  </>
+                ) : (
+                  <Link href={`/categories/${product.category.slug}`} className="hover:text-gray-900">
+                    {product.category.name}
+                  </Link>
+                )}
                 <span>/</span>
                 <span className="text-gray-900">{product.name}</span>
               </div>
