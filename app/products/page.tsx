@@ -22,10 +22,10 @@ function AnimatedProductCard({ product, index }: { product: Product; index: numb
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0} : { opacity: 0, y: 50 }}
       transition={{ 
-        duration: 0.6, 
+        duration: 0.4, 
         delay: index * 0.1,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
@@ -122,7 +122,7 @@ function ProductsPageContent() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"
+            className="rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"
           ></motion.div>
           <p className="mt-4 text-gray-600">Loading products...</p>
         </div>
@@ -134,104 +134,15 @@ function ProductsPageContent() {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-gray-50 pt-10"
     >
       {/* Search and Filters */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true, margin: "-50px" }}
-      >
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          {/* Search and Filters Row */}
-          <div className="flex items-center gap-2">
-            {/* Search Bar */}
-            <div className="flex-1">
-              <form onSubmit={handleSearch}>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-900 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search for dresses, lehengas, shoes..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 placeholder-gray-500 text-sm"
-                  />
-                </div>
-              </form>
-            </div>
-
-            {/* Sort Controls */}
-            <div className="flex items-center space-x-2">
-              {/* Sort Options */}
-              <select
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [sort, order] = e.target.value.split('-');
-                  setSortBy(sort);
-                  setSortOrder(order);
-                }}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white text-sm"
-              >
-                <option value="createdAt-desc">Newest</option>
-                <option value="createdAt-asc">Oldest</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-              </select>
-
-              {/* Clear Filters */}
-              {(searchTerm || sortBy !== 'createdAt' || sortOrder !== 'desc') && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                  onClick={clearFilters}
-                  className="text-xs text-pink-600 hover:text-pink-700 font-medium"
-                >
-                  Clear
-                </motion.button>
-              )}
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center space-x-1">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'grid' 
-                    ? 'bg-pink-100 text-pink-600' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Grid className="w-4 h-4" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list' 
-                    ? 'bg-pink-100 text-pink-600' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+    
 
       {/* Products Grid/List */}
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16"
       >
         {products.length === 0 ? (
@@ -239,7 +150,7 @@ function ProductsPageContent() {
             initial={{ scale: 0.8, opacity: 0, y: 30 }}
             whileInView={{ scale: 1, opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="text-center py-12"
           >
             <div className="text-gray-400 mb-4">
@@ -263,20 +174,6 @@ function ProductsPageContent() {
           </motion.div>
         ) : (
           <>
-            {/* Products Count */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5 }}
-              className="mb-6"
-            >
-              <p className="text-gray-600">
-                Showing {products.length} products
-                {searchTerm && ` for "${searchTerm}"`}
-                {searchParams.get('category') && ` in ${searchParams.get('category')}`}
-              </p>
-            </motion.div>
 
             {/* Products Grid */}
             <motion.div 

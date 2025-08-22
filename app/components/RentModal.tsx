@@ -8,11 +8,8 @@ interface RentModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: any;
-  rentalDates: {
-    startDate: string;
-    endDate: string;
-  };
-  onRentalDatesChange: (dates: { startDate: string; endDate: string }) => void;
+  needDate: string;
+  onNeedDateChange: (date: string) => void;
   onConfirmRent: () => void;
 }
 
@@ -20,30 +17,17 @@ export default function RentModal({
   isOpen, 
   onClose, 
   product, 
-  rentalDates, 
-  onRentalDatesChange, 
+  needDate, 
+  onNeedDateChange, 
   onConfirmRent 
 }: RentModalProps) {
   if (!product) return null;
 
   const calculateRentalDays = () => {
-    if (!rentalDates.startDate || !rentalDates.endDate) return 0;
-    const start = new Date(rentalDates.startDate);
-    const end = new Date(rentalDates.endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Don't count start date, only count middle days
-    // For rentals under 3 days, count as 1 day minimum
-    // For rentals 3+ days, count the days between start and end (excluding start date)
-    if (days < 3) {
-      return 1; // Minimum 1 day for short rentals
-    } else {
-      return days; // Count all days between start and end (including end date)
-    }
+    return 1; // Always 1 day rental
   };
 
-  const rentalDays = calculateRentalDays();
+  const rentalDays = 1; // Always 1 day
   const totalPrice = product.price * rentalDays;
   const totalWithDeposit = totalPrice + (product.deposit || 0);
 
@@ -81,41 +65,23 @@ export default function RentModal({
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Rental Dates */}
+              {/* Need Date */}
               <div>
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
                   <Calendar className="w-5 h-5 mr-2" />
-                  Select Rental Dates
+                  When do you need this?
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={rentalDates.startDate}
-                      onChange={(e) => onRentalDatesChange({ 
-                        ...rentalDates, 
-                        startDate: e.target.value 
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={rentalDates.endDate}
-                      onChange={(e) => onRentalDatesChange({ 
-                        ...rentalDates, 
-                        endDate: e.target.value 
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Need Date
+                  </label>
+                  <input
+                    type="date"
+                    min={new Date().toISOString().split('T')[0]}
+                    value={needDate}
+                    onChange={(e) => onNeedDateChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  />
                 </div>
               </div>
 
@@ -124,7 +90,7 @@ export default function RentModal({
                 <h3 className="font-semibold text-gray-900 mb-3">Price Breakdown</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Rental Price ({rentalDays} days)</span>
+                    <span className="text-gray-600">Rental Price (1 day)</span>
                     <span className="text-gray-900">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -172,7 +138,7 @@ export default function RentModal({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onConfirmRent}
-                disabled={!rentalDates.startDate || !rentalDates.endDate}
+                disabled={!needDate}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Confirm Rental - {formatPrice(totalWithDeposit)}

@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 interface CartContextType {
   cart: Cart;
   wishlistItems: Product[];
-  addToCart: (product: Product, quantity: number, rentalDuration: number, rentalDates?: { startDate: string; endDate: string }) => void;
+  addToCart: (product: Product, quantity: number, rentalDuration: number, needDate?: string) => void;
   removeFromCart: (productId: string) => void;
   updateCartItem: (productId: string, quantity: number, rentalDuration: number) => void;
   clearCart: () => void;
@@ -80,11 +80,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const calculateTotal = (items: CartItem[]): number => {
     return items.reduce((total, item) => {
-      return total + (item.product.price * item.quantity * item.rentalDuration);
+      return total + (item.product.price * item.quantity * 1); // Always 1 day rental
     }, 0);
   };
 
-  const addToCart = (product: Product, quantity: number, rentalDuration: number, rentalDates?: { startDate: string; endDate: string }) => {
+  const addToCart = (product: Product, quantity: number, rentalDuration: number, needDate?: string) => {
     setCart(prevCart => {
       const existingItemIndex = prevCart.items.findIndex(
         item => item.product._id === product._id
@@ -97,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             ...updatedItems[existingItemIndex],
             quantity: updatedItems[existingItemIndex].quantity + quantity,
             rentalDuration: rentalDuration, // Update rental duration
-            rentalDates: rentalDates || updatedItems[existingItemIndex].rentalDates
+            needDate: needDate || updatedItems[existingItemIndex].needDate
           };
 
         const newCart = {
@@ -114,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           product,
           quantity,
           rentalDuration,
-          rentalDates
+          needDate
         };
 
         const newItems = [...prevCart.items, newItem];

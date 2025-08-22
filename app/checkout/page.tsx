@@ -106,8 +106,9 @@ export default function CheckoutPage() {
           country: selectedAddress.country
         },
         paymentMethod: paymentMethod,
-        rentalStartDate: cart.items[0]?.rentalDates?.startDate || new Date().toISOString(),
-        rentalEndDate: cart.items[0]?.rentalDates?.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        rentalStartDate: cart.items[0]?.needDate || new Date().toISOString(),
+        rentalEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default 7 days from now
+        needDate: cart.items[0]?.needDate || new Date().toISOString(),
         notes: ''
       };
 
@@ -409,16 +410,16 @@ export default function CheckoutPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h3>
                       <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                      <p className="text-sm text-gray-500">Duration: {item.rentalDuration} day{item.rentalDuration !== 1 ? 's' : ''}</p>
-                      {item.rentalDates && (
+                      <p className="text-sm text-gray-500">Duration: 1 day</p>
+                      {item.needDate && (
                         <p className="text-sm text-gray-500">
-                          {new Date(item.rentalDates.startDate).toLocaleDateString()} - {new Date(item.rentalDates.endDate).toLocaleDateString()}
+                          Need by: {new Date(item.needDate).toLocaleDateString()}
                         </p>
                       )}
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        {formatPrice(item.product.price * item.quantity * item.rentalDuration)}
+                        {formatPrice(item.product.price * item.quantity * 1)}
                       </p>
                     </div>
                   </div>

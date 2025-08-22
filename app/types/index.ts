@@ -148,10 +148,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   rentalDuration: number;
-  rentalDates?: {
-    startDate: string;
-    endDate: string;
-  };
+  needDate?: string;
 }
 
 export interface Cart {
@@ -176,6 +173,7 @@ export interface CreateOrderData {
   paymentMethod: string;
   rentalStartDate: string;
   rentalEndDate: string;
+  needDate?: string;
   notes?: string;
 }
 

@@ -14,18 +14,8 @@ export default function CartPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const calculateDays = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const calculateRentalDays = (startDate: string, endDate: string) => {
-    const days = calculateDays(startDate, endDate);
-    if (days <= 2) return 1;
-    return days - 1; // Don't count start and end dates
+  const calculateRentalDays = (needDate: string) => {
+    return 1; // Always 1 day rental
   };
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
@@ -39,8 +29,8 @@ export default function CartPage() {
     }
   };
 
-  const handleDateChange = (productId: string, startDate: string, endDate: string) => {
-    const rentalDays = calculateRentalDays(startDate, endDate);
+  const handleDateChange = (productId: string, needDate: string) => {
+    const rentalDays = calculateRentalDays(needDate);
     const item = cart.items.find(item => item.product._id === productId);
     if (item) {
       updateCartItem(productId, item.quantity, rentalDays);
@@ -195,49 +185,32 @@ export default function CartPage() {
                           <div className="space-y-3">
                             <div className="flex items-center space-x-2">
                               <Calendar className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm font-medium text-gray-700">Rental Dates:</span>
+                              <span className="text-sm font-medium text-gray-700">When do you need this?</span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-xs text-gray-500 mb-1">Start Date</label>
-                                <input
-                                  type="date"
-                                  min={new Date().toISOString().split('T')[0]}
-                                  value={item.rentalDates?.startDate || ''}
-                                  onChange={(e) => {
-                                    const endDate = new Date(e.target.value);
-                                    endDate.setDate(endDate.getDate() + 1);
-                                    handleDateChange(item.product._id, e.target.value, endDate.toISOString().split('T')[0]);
-                                  }}
-                                  className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs text-gray-500 mb-1">End Date</label>
-                                <input
-                                  type="date"
-                                  min={new Date().toISOString().split('T')[0]}
-                                  value={item.rentalDates?.endDate || ''}
-                                  onChange={(e) => {
-                                    const startDate = new Date();
-                                    handleDateChange(item.product._id, startDate.toISOString().split('T')[0], e.target.value);
-                                  }}
-                                  className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                />
-                              </div>
+                            <div>
+                              <label className="block text-xs text-gray-500 mb-1">Need Date</label>
+                              <input
+                                type="date"
+                                min={new Date().toISOString().split('T')[0]}
+                                value={item.needDate || ''}
+                                onChange={(e) => {
+                                  handleDateChange(item.product._id, e.target.value);
+                                }}
+                                className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                              />
                             </div>
                             <p className="text-xs text-gray-500">
-                              Rental days: {item.rentalDuration} day{item.rentalDuration !== 1 ? 's' : ''}
+                              Rental duration: 1 day
                             </p>
                           </div>
 
                           {/* Price */}
                           <div className="text-right">
                             <p className="text-lg font-semibold text-gray-900">
-                              {formatPrice(item.product.price * item.quantity * item.rentalDuration)}
+                              {formatPrice(item.product.price * item.quantity * 1)}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {formatPrice(item.product.price)} × {item.quantity} × {item.rentalDuration} days
+                              {formatPrice(item.product.price)} × {item.quantity} × 1 day
                             </p>
                           </div>
                         </div>

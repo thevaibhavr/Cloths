@@ -10,6 +10,7 @@ import { formatPrice, getDiscountPercentage, getConditionColor } from '../utils'
 import { useCart } from '../contexts/CartContext';
 import { isExternalImage, isValidImageUrl, handleImageError } from '../utils/imageUtils';
 import RentModal from './RentModal';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -17,13 +18,11 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, variant = 'default' }: ProductCardProps) {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showRentModal, setShowRentModal] = useState(false);
-  const [rentalDates, setRentalDates] = useState({
-    startDate: '',
-    endDate: ''
-  });
+  const [needDate, setNeedDate] = useState('');
   const { addToCart, getCartItem, getCartItemCount } = useCart();
   const discountPercentage = getDiscountPercentage(product.originalPrice, product.price);
   
@@ -86,10 +85,10 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
   };
 
   const handleConfirmRent = () => {
-    if (rentalDates.startDate && rentalDates.endDate) {
-      addToCart(product, 1, product.rentalDuration, rentalDates);
+    if (needDate) {
+      addToCart(product, 1, 1, needDate); // Always 1 day rental
       setShowRentModal(false);
-      setRentalDates({ startDate: '', endDate: '' });
+      setNeedDate('');
     }
   };
 
@@ -119,7 +118,7 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
     >
       {/* Image Container */}
       <div 
-        className="relative aspect-[3/4] overflow-hidden"
+        className="relative aspect-[3/3.3] overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -131,7 +130,8 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full"
+            className="w-full h-full cursor-pointer"
+            onClick={() => router.push(`/product/${product.slug}`)}
           >
             {isValidImageUrl(product.images[currentImageIndex]) ? (
               <Image
@@ -152,7 +152,10 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
         
         {/* Wishlist Button */}
         <button
-          onClick={handleWishlistToggle}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleWishlistToggle();
+          }}
           className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/wishlist shadow-lg"
         >
           <Heart 
@@ -184,7 +187,10 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
             {product.images.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentImageIndex(index)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImageIndex(index);
+                }}
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index === currentImageIndex ? 'bg-yellow-400' : 'bg-white/70'
                 }`}
@@ -378,8 +384,8 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
         isOpen={showRentModal}
         onClose={() => setShowRentModal(false)}
         product={product}
-        rentalDates={rentalDates}
-        onRentalDatesChange={setRentalDates}
+        needDate={needDate}
+        onNeedDateChange={setNeedDate}
         onConfirmRent={handleConfirmRent}
       />
     </motion.div>

@@ -16,13 +16,15 @@ import {
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL: string;
+  private baseURL!: string;
 
   constructor() {
     // Use localhost for development, deployed URL for production
     this.baseURL = process.env.NODE_ENV === 'production' 
       ? 'https://cloth-backend-tpce.onrender.com/api'
       : 'http://localhost:5000/api';
+ 
+    // this.baseURL = 'https://cloth-backend-tpce.onrender.com/api';
     this.api = axios.create({
       baseURL: this.baseURL,
       headers: {
