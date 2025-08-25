@@ -244,9 +244,11 @@ export default function ProductPage({ params }: ProductPageProps) {
                <div className="absolute top-4 right-4 flex space-x-2">
                  <button 
                    onClick={() => {
-                     const message = `Book this ${product.category.name} just in ₹${product.price} price on Rent The Moment! ${window.location.href}`;
-                     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                     window.open(whatsappUrl, '_blank');
+                     if (typeof window !== 'undefined') {
+                       const message = `Book this ${product.category.name} just in ₹${product.price} price on Rent The Moment! ${window.location.href}`;
+                       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                       window.open(whatsappUrl, '_blank');
+                     }
                    }}
                    className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
                    title="Share on WhatsApp"

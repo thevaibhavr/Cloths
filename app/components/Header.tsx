@@ -18,6 +18,8 @@ export default function Header() {
 
   // Handle scroll to hide/show header
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -39,7 +41,7 @@ export default function Header() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener(' scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY, hasItems]);
 
   // Close mobile menu when clicking outside

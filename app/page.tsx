@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 // import HeroSlider from './components/HeroSlider';
+
 import CategoryCard from './components/CategoryCard';
 import ProductCard from './components/ProductCard';
 import { getCategories, getProducts } from './data/products';

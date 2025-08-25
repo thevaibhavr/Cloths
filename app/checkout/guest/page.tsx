@@ -41,10 +41,10 @@ export default function GuestCheckoutPage() {
 
   useEffect(() => {
     if (cart.items.length === 0) {
-      window.location.href = '/';
+      router.push('/');
       return;
     }
-  }, [cart.items.length]);
+  }, [cart.items.length, router]);
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,12 +86,14 @@ ${order.shippingAddress.country}
     const whatsappUrl = `https://wa.me/919926503468?text=${encodeURIComponent(orderDetails)}`;
     
     // Try to open WhatsApp with a fallback
-    try {
-      window.open(whatsappUrl, '_blank');
-    } catch (error) {
-      // Fallback: copy to clipboard and show message
-      navigator.clipboard.writeText(orderDetails);
-      alert('Order details copied to clipboard. Please paste in WhatsApp manually.');
+    if (typeof window !== 'undefined') {
+      try {
+        window.open(whatsappUrl, '_blank');
+      } catch (error) {
+        // Fallback: copy to clipboard and show message
+        navigator.clipboard.writeText(orderDetails);
+        alert('Order details copied to clipboard. Please paste in WhatsApp manually.');
+      }
     }
   };
 

@@ -9,9 +9,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { Order } from '../types';
 import { formatPrice } from '../utils';
+import { useRouter } from 'next/navigation';
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,11 +21,11 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!user) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
     loadOrders();
-  }, [user, currentPage]);
+  }, [user, currentPage, router]);
 
   const loadOrders = async () => {
     try {

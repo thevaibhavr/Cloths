@@ -47,12 +47,12 @@ export default function CheckoutPage() {
     }
 
     if (!user) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
 
     if (cart.items.length === 0) {
-      window.location.href = '/cart';
+      router.push('/cart');
       return;
     }
 
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
         ...user.address
       });
     }
-  }, [user, authLoading, cart.items.length]);
+  }, [user, authLoading, cart.items.length, router]);
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
