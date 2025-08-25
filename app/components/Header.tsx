@@ -2,18 +2,16 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, Menu, X, Heart, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Heart, Phone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { getCartItemCount } = useCart();
-  const { user, logout } = useAuth();
 
   const cartItemCount = getCartItemCount();
   const hasItems = cartItemCount > 0;
@@ -59,10 +57,7 @@ export default function Header() {
     }
   }, [isMenuOpen]);
 
-  const handleLogout = () => {
-    logout();
-    setIsMenuOpen(false);
-  };
+
 
   return (
     <header className={`bg-white shadow-lg border-b border-gray-100 fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
@@ -119,7 +114,7 @@ export default function Header() {
             <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
               <Heart className="w-5 h-5" />
             </Link>
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
+            <Link href="/checkout/guest" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
               {cartItemCount > 0 && (
                 <motion.span 
@@ -131,30 +126,13 @@ export default function Header() {
                 </motion.span>
               )}
             </Link>
-            {user && (
-              <Link href="/orders" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
-                <Package className="w-5 h-5" />
-              </Link>
-            )}
-            {user ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700 font-medium">Hi, {user.name}</span>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 text-gray-700 hover:text-red-600 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition-all duration-200 font-bold shadow-lg"
-              >
-                Login
-              </Link>
-            )}
+            <Link
+              href="tel:9926503468"
+              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-bold shadow-lg flex items-center"
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              Call Us
+            </Link>
             <Link
               href="/list-item"
               className="bg-black text-white border border-black px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 font-bold shadow-lg"
@@ -165,7 +143,7 @@ export default function Header() {
 
           {/* Mobile Cart Icon */}
           <div className="md:hidden flex items-center space-x-2">
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
+            <Link href="/checkout/guest" className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />
               {cartItemCount > 0 && (
                 <motion.span 
@@ -214,7 +192,7 @@ export default function Header() {
                 <Link href="/wishlist" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
                   <Heart className="w-5 h-5" />
                 </Link>
-                <Link href="/cart" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
+                <Link href="/checkout/guest" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
                   <ShoppingBag className="w-5 h-5" />
                   {cartItemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
@@ -222,31 +200,14 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
-                {user && (
-                  <Link href="/orders" onClick={() => setIsMenuOpen(false)} className="relative p-2 text-gray-700 hover:text-yellow-600 transition-colors">
-                    <Package className="w-5 h-5" />
-                  </Link>
-                )}
-                {user ? (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-700 font-medium">Hi, {user.name}</span>
-                    <button
-                      onClick={handleLogout}
-                      className="p-2 text-gray-700 hover:text-red-600 transition-colors"
-                      title="Logout"
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition-all duration-200 font-bold"
-                  >
-                    Login
-                  </Link>
-                )}
+                <Link
+                  href="tel:9926503468"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-bold flex items-center"
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call Us
+                </Link>
                 <Link
                   href="/list-item"
                   onClick={() => setIsMenuOpen(false)}

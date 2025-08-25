@@ -169,6 +169,11 @@ class ApiService {
     return response.data.data!.order;
   }
 
+  async createGuestOrder(data: CreateOrderData): Promise<Order> {
+    const response: AxiosResponse<ApiResponse<{ order: Order }>> = await this.api.post('/orders/guest', data);
+    return response.data.data!.order;
+  }
+
   async getOrders(page = 1, limit = 10): Promise<PaginatedResponse<Order>> {
     const params = new URLSearchParams({
       page: page.toString(),
