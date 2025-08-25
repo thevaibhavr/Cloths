@@ -88,7 +88,7 @@ export default function Home() {
       animate={{ opacity: 1 }}
     >
       {/* Hero Slider */}
-      <HeroSlider />
+      {/* <HeroSlider /> */}
 
       {/* Categories Section */}
       <motion.section 
@@ -96,7 +96,7 @@ export default function Home() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-20 bg-white"
+        className="pb-20 pt-10 bg-white"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 

@@ -39,7 +39,7 @@ export default function Header() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener(' scroll', handleScroll);
   }, [lastScrollY, hasItems]);
 
   // Close mobile menu when clicking outside
