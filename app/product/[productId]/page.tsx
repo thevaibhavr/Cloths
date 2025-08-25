@@ -371,6 +371,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                  whileTap={{ scale: 0.98 }}
                  onClick={() => {
                    if (typeof window !== 'undefined') {
+                     const productImage = product.images[0];
                      const message = `May I know about this dress?
 
 *Product Details:*
@@ -389,6 +390,7 @@ ${product.description}
 
 *Tags:* ${product.tags.join(', ')}
 
+*Product Image:* ${productImage}
 *Product Link:* ${window.location.href}`;
                      const whatsappUrl = `https://wa.me/919926503468?text=${encodeURIComponent(message)}`;
                      window.open(whatsappUrl, '_blank');
