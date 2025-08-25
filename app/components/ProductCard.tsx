@@ -76,8 +76,24 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
     setTouchEnd(0);
   };
 
-  const handleAddToCart = () => {
-    addToCart(product, 1, product.rentalDuration);
+  const handleGetInfo = () => {
+    if (typeof window !== 'undefined') {
+      const message = `May I know about this dress?
+
+*Product Details:*
+• Name: ${product.name}
+• Price: ₹${product.price}
+• Category: ${product.category.name}
+• Color: ${product.color}
+• Sizes: ${product.sizes.map((s: { size: string }) => s.size).join(', ')}
+• Condition: ${product.condition}
+• Rental Duration: ${product.rentalDuration} days
+• Brand: ${product.brand || 'Not specified'}
+
+*Product Link:* ${window.location.origin}/product/${product.slug}`;
+      const whatsappUrl = `https://wa.me/919926503468?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   const handleRentNow = () => {
@@ -289,26 +305,12 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
 
             {/* Action Buttons */}
             <div className="flex space-x-3">
-              {isInCart ? (
-                <Link
-                  href="/cart"
-                  className="w-1/2 bg-green-600 text-white text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-center shadow-lg"
-                >
-                  Go to Cart ({cartItem?.quantity})
-                </Link>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.isAvailable}
-                  className={`w-1/2 text-sm font-bold py-3 px-4 rounded-lg transition-all duration-200 text-center shadow-lg ${
-                    product.isAvailable
-                      ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:shadow-xl transform hover:-translate-y-1'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  {product.isAvailable ? 'Add to Cart' : 'Not Available'}
-                </button>
-              )}
+              <button
+                onClick={handleGetInfo}
+                className="w-1/2 bg-green-500 text-white text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Get Info
+              </button>
               <Link
                 href={`/product/${product.slug}`}
                 className="w-1/2 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg"
@@ -342,28 +344,14 @@ export default function ProductCard({ product, variant = 'default' }: ProductCar
               )}
             </div>
 
-            {/* Compact Version - Small Add to Cart Button */}
+            {/* Compact Version - Small Get Info Button */}
             <div className="flex space-x-2">
-              {isInCart ? (
-                <Link
-                  href="/cart"
-                  className="w-1/2 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-700 transition-all duration-200 text-center"
-                >
-                  Cart ({cartItem?.quantity})
-                </Link>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.isAvailable}
-                  className={`w-1/2 text-xs font-bold py-2 px-3 rounded-lg transition-all duration-200 text-center ${
-                    product.isAvailable
-                      ? 'bg-yellow-400 text-black hover:bg-yellow-500'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  {product.isAvailable ? 'Add to Cart' : 'Not Available'}
-                </button>
-              )}
+              <button
+                onClick={handleGetInfo}
+                className="w-1/2 bg-green-500 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition-all duration-200 text-center"
+              >
+                Get Info
+              </button>
               <Link
                 href={`/product/${product.slug}`}
                 className="w-1/2 bg-black text-white hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center justify-center px-3 py-2"
